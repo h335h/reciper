@@ -22,6 +22,22 @@ wheels/
 *.egg
 MANIFEST
 
+# Reciper cache (local AST cache, not needed in repo)
+.reciper_cache/
+
+# Examples and test projects (not needed in public repo)
+examples/
+test_subprocess_project/
+
+# Documentation (separate branch or wiki)
+docs/
+
+# Tests
+tests/
+
+# Analysis artifacts
+reciper2/
+
 # Virtual environments
 venv/
 ENV/
