@@ -183,12 +183,16 @@ def analyze_directory(
             all_packages, requirements_dict
         )
 
-        # Step 5: Generate Dockerfile and environment.yml
+        # Step 5: Generate Dockerfile and environment.yml with subprocess command detection
         click.echo(f"\nGenerating files in {output_dir}...")
+        click.echo("Scanning for subprocess calls to external tools (samtools, bwa, fastqc, etc.)...")
+        
+        # Pass Python files for command detection
+        python_file_paths = [info.path for info in file_infos]
         generate_files(
             conda_specs,
             output_dir,
-            python_files=None,
+            python_files=python_file_paths,
             include_apt_detection=True,
             no_lock=no_lock,
             conflict_check=conflict_check

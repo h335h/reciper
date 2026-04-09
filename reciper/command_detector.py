@@ -65,9 +65,13 @@ class AptPackage:
 
 
 class CommandDetector(ast.NodeVisitor):
-    """AST visitor for detecting external command calls."""
+    """AST visitor for detecting external command calls.
     
-    def __init__(self, file_path: Path):
+    Can be initialized without file_path for use in Analyzer,
+    file_path is set when processing individual files.
+    """
+    
+    def __init__(self, file_path: Optional[Path] = None):
         self.file_path = file_path
         self.command_calls: list[CommandCall] = []
     
