@@ -7,293 +7,373 @@
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 
-**Генерация рабочих Docker и conda окружений для биоинформатических пайплайнов одной командой.**
-
-## 🎯 Что это такое?
-
-Reciper — это CLI инструмент, который **автоматически создает гарантированно рабочие окружения** для биоинформатических пайплайнов:
-
-1. **Сканирует** ваш Python код и находит все импорты
-2. **Обнаруживает** вызовы внешних утилит (samtools, bwa, fastqc и др.)
-3. **Генерирует** `Dockerfile` и `environment.yml` с правильными зависимостями
-4. **Проверяет** совместимость пакетов и находит конфликты
-5. **Валидирует** окружение через синтаксическую проверку сгенерированных файлов
-
-**Результат:** Ваш коллега сможет запустить пайплайн с первого раза без ошибок "package not found" и конфликтов версий.
+**Generate working Docker and conda environments for bioinformatics pipelines with a single command.**
 
 ---
 
-## ⚡ Быстрый старт
+## Table of Contents
 
-### Установка (одна команда)
+- [What is Reciper?](#what-is-reciper)
+- [Quick Start](#quick-start)
+- [CLI Command Reference](#cli-command-reference)
+- [How It Works](#how-it-works)
+- [Key Features](#key-features)
+- [Supported Bioinformatics Tools](#supported-bioinformatics-tools)
+- [Programmatic API](#programmatic-api)
+- [Project Structure](#project-structure)
+- [Testing and Development](#testing-and-development)
+- [Configuration](#configuration)
+- [JSON Report Structure](#json-report-structure)
+- [Limitations and Future Improvements](#limitations-and-future-improvements)
+- [Contributing](#contributing)
+- [License](#license)
+
+---
+
+## What is Reciper?
+
+Reciper is a CLI tool and Python library that **automatically generates guaranteed-to-work environments** for bioinformatics pipelines:
+
+1. **Scans** your Python code and finds all imports
+2. **Detects** external tool calls (samtools, bwa, fastqc, etc.) via subprocess analysis
+3. **Generates** `Dockerfile` and `environment.yml` with correct dependencies
+4. **Checks** package compatibility and finds conflicts
+5. **Validates** environments through syntax checks and optional test builds
+6. **Creates** lock files for full reproducibility (via `conda-lock` and `pip-compile`)
+
+**Result:** Your colleagues can run your pipeline on the first try without "package not found" errors or version conflicts.
+
+---
+
+## Quick Start
+
+### Installation
 
 ```bash
-# Вариант 1: Через pip (рекомендуется)
+# Option 1: Via pip (recommended)
 pip install reciper
 
-# Вариант 2: Через pipx (изолированно, не засоряет систему)
+# Option 2: Via pipx (isolated, doesn't pollute your system)
 pipx install reciper
 
-# Вариант 3: Для разработки
+# Option 3: For development
 git clone https://github.com/h335h/reciper
-cd reciper && pip install -e .
+cd reciper && pip install -e ".[dev]"
 ```
 
-### Использование (одна команда)
+### Basic Usage
 
 ```bash
-# Зайти в папку с пайплайном и запустить анализ
+# Navigate to your pipeline directory and run analysis
 cd /path/to/your/pipeline
 reciper analyze .
 ```
 
-**Это всё!** После выполнения в папке появятся:
-- ✅ `Dockerfile` — готовый к сборке контейнер
-- ✅ `environment.yml` — conda окружение
-- ✅ `environment.lock.yml` — locked версии для воспроизводимости
-- ✅ `analysis.json` — подробный отчет (опционально)
+**That's it!** After execution, you'll get:
+- `Dockerfile` — ready-to-build container
+- `environment.yml` — conda environment
+- `environment.lock.yml` — locked versions for reproducibility
+- `analysis.json` — detailed report (optional, via `--report-file`)
 
 ---
 
-## 📋 Примеры использования
+## CLI Command Reference
 
-### Базовый анализ
+### `reciper analyze <path>`
+
+Analyze Python code and generate reproducible environments.
+
+```
+Usage: reciper analyze [OPTIONS] PATH
+
+Arguments:
+  PATH    Path to Python source file or directory to analyze
+```
+
+#### Options
+
+| Option | Description |
+|--------|-------------|
+| `--output`, `-o` | Output directory for generated files (default: current directory) |
+| `--json`, `-j` | Output JSON report to stdout |
+| `--report-file`, `-r` | Save JSON report to a file |
+| `--no-lock` | Disable lock file generation |
+| `--no-verify` | Skip verification step |
+| `--verbose`, `-v` | Detailed output with debug information |
+| `--conflict-check` / `--no-conflict-check` | Enable/disable conflict detection (default: enabled) |
+| `--parallel` / `--no-parallel` | Enable/disable parallel processing (default: enabled) |
+| `--max-workers` | Maximum number of worker threads (default: auto-calculated based on file count) |
+| `--no-cache` | Disable AST caching (default: caching enabled) |
+
+#### Examples
 
 ```bash
-# Анализ текущей директории
+# Basic analysis
 reciper analyze .
 
-# Анализ с выводом прогресса
+# Analyze with verbose output
 reciper analyze . --verbose
 
-# Анализ другой папки
-reciper analyze /home/user/ngs_pipeline
-```
-
-### Продвинутые опции
-
-```bash
-# Сохранить JSON отчет
+# Save JSON report to file
 reciper analyze . --report-file report.json
 
-# Вывести JSON в консоль
+# Output JSON to console
 reciper analyze . --json
 
-# Пропустить валидацию (быстрее)
+# Skip verification (faster)
 reciper analyze . --no-verify
 
-# Отключить проверку конфликтов
+# Disable conflict checking
 reciper analyze . --no-conflict-check
 
-# Указать выходную директорию
+# Specify output directory
 reciper analyze . --output ./docker_files
-```
 
-### Полный пример для биоинформатического пайплайна
+# Disable parallel processing
+reciper analyze . --no-parallel
 
-```bash
-# 1. Скачиваем пример пайплайна
-git clone https://github.com/example/rna-seq-pipeline.git
-cd rna-seq-pipeline
+# Disable AST caching
+reciper analyze . --no-cache
 
-# 2. Запускаем Reciper
-reciper analyze . --verbose
+# Analyze a specific file
+reciper analyze pipeline.py
 
-# 3. Проверяем сгенерированные файлы
-cat Dockerfile
-cat environment.yml
-
-# 4. Собираем Docker образ (гарантированно рабочий!)
-docker build -t rna-seq-pipeline .
-
-# 5. Запускаем контейнер
-docker run -it rna-seq-pipeline
+# Full example with multiple options
+reciper analyze ./rna-seq-pipeline --verbose --output ./env --report-file analysis.json --no-lock
 ```
 
 ---
 
-## 🔍 Как это работает?
+## How It Works
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│  1. Сканирование                                                │
-│     ├─ Поиск .py файлов в директории                            │
-│     └─ Парсинг AST для извлечения импортов                      │
-└─────────────────────────────────────────────────────────────────┘
-                              ↓
-┌─────────────────────────────────────────────────────────────────┐
-│  2. Обнаружение зависимостей                                    │
-│     ├─ Python пакеты (numpy, pandas, biopython)                 │
-│     └─ Системные утилиты (samtools, bwa, fastqc через subprocess)│
-└─────────────────────────────────────────────────────────────────┘
-                              ↓
-┌─────────────────────────────────────────────────────────────────┐
-│  3. Маппинг на conda/apt                                        │
-│     ├─ Python → conda пакеты (biopython, pysam, etc.)           │
-│     └─ Команды → apt пакеты (samtools, bowtie2, etc.)           │
-└─────────────────────────────────────────────────────────────────┘
-                              ↓
-┌─────────────────────────────────────────────────────────────────┐
-│  4. Проверка конфликтов                                         │
-│     ├─ Анализ совместимости версий                              │
-│     └─ Предупреждения о проблемных комбинациях                  │
-└─────────────────────────────────────────────────────────────────┘
-                              ↓
-┌─────────────────────────────────────────────────────────────────┐
-│  5. Генерация файлов                                            │
-│     ├─ Dockerfile с miniconda3 и apt пакетами                   │
-│     ├─ environment.yml для conda                                │
-│     └─ environment.lock.yml для воспроизводимости               │
-└─────────────────────────────────────────────────────────────────┘
-                              ↓
-┌─────────────────────────────────────────────────────────────────┐
-│  6. Валидация                                                   │
-│     ├─ Синтаксическая проверка Dockerfile                       │
-│     ├─ Проверка синтаксиса environment.yml                      │
-│     └─ (Опционально) Тестовая сборка Docker                     │
-└─────────────────────────────────────────────────────────────────┘
-```
-
----
-
-## 🎁 Что вы получаете
-
-### Для разработчика пайплайна:
-- ✅ **Автоматизация** — никаких ручных списков зависимостей
-- ✅ **Надежность** — обнаружение конфликтов до публикации
-- ✅ **Воспроизводимость** — locked версии для точного повторения
-
-### Для пользователя пайплайна:
-- ✅ **Запуск с первого раза** — все зависимости указаны правильно
-- ✅ **Docker контейнер** — изолированное окружение без конфликтов
-- ✅ **Прозрачность** — видно какие пакеты и зачем нужны
-
----
-
-## 🧬 Поддерживаемые биоинформатические инструменты
-
-### Conda пакеты (автоматический маппинг):
-```
-biopython, pysam, pybedtools, cyvcf2
-pandas, numpy, scipy, scikit-learn
-matplotlib, seaborn, plotly
-```
-
-### Системные утилиты (обнаружение через subprocess):
-```
-# Выравнивание
-bwa, bowtie2, bowtie, star, hisat2
-
-# Обработка BAM/SAM/VCF
-samtools, bcftools, bedtools, vcftools, tabix
-
-# QC и отчеты
-fastqc, multiqc, trimmomatic, cutadapt
-
-# BLAST и поиск гомологов
-blastn, blastp, blastx, hmmer, muscle, mafft
-
-# Филогенетика
-raxml, iqtree, mrbayes
-
-# Аннотация вариантов
-snpEff, VEP, annovar
-```
-
-Полный список в `reciper/data/command_mappings.yaml`
-
----
-
-## 📊 Пример вывода
-
-```bash
-$ reciper analyze ./rna-seq-pipeline --verbose
-
-Performance settings: parallel=True, max_workers=None, cache=True
-Scanning directory: ./rna-seq-pipeline
-Looking for Python files...
-  Scanning... Directories: 5, Files: 23, Python files: 8
-Found 8 Python files in ./rna-seq-pipeline
-
-Parsing imports from all files...
-Aggregated 15 unique packages from 8 files
-
-Looking for dependency files...
-Found dependency file: requirements.txt
-Parsed 12 package requirements
-Warning: 3 imported packages missing from requirements:
-  - pysam
-  - pybedtools
-  - sklearn
-
-Mapping Python packages to conda specifications...
-Mapped to 12 conda specifications
-
-Generating files in ....
-Scanning for subprocess calls to external tools...
-Detected commands: fastqc, samtools, bwa, multiqc
-
-============================================================
-PACKAGE CONFLICT DETECTION
-============================================================
-Detected 2 potential conflict(s):
-
-1. [ERROR] pandas 2.0.0+ requires NumPy 1.21.0+
-   Packages involved: pandas, numpy
-2. [WARNING] For optimal performance, use numpy>=1.21.0 with pandas>=1.3.0
-   Packages involved: numpy, pandas
-============================================================
-
-⚠️  Found 1 critical conflict(s) that may cause installation failures.
-   Consider adjusting package versions or splitting environments.
-
-Created environment.yml at environment.yml
-Created Dockerfile at Dockerfile
-Created conda lock file: environment.lock.yml
-
-============================================================
-VERIFICATION
-============================================================
-✓ Dockerfile syntax check passed
-✓ environment.yml syntax check passed
-✓ Docker container test passed (imports verified)
-✅ Verification passed
-
-============================================================
-ANALYSIS SUMMARY
-============================================================
-Directory analyzed: ./rna-seq-pipeline
-Python files scanned: 8
-Unique packages found: 15
-Requirements parsed: 12 packages
-Conda specifications generated: 12
-Apt packages detected: 4 (samtools, bwa, fastqc, multiqc)
-============================================================
-Success
++-----------------------------------------------------------------+
+|  1. Scanning                                                    |
+|     - Find .py files recursively in directory                   |
+|     - Parse AST to extract imports (with caching)               |
++-----------------------------------------------------------------+
+                              |
+                              v
++-----------------------------------------------------------------+
+|  2. Dependency Discovery                                        |
+|     - Python packages (numpy, pandas, biopython)                |
+|     - System utilities (samtools, bwa, fastqc via subprocess)   |
++-----------------------------------------------------------------+
+                              |
+                              v
++-----------------------------------------------------------------+
+|  3. Map to conda/apt                                            |
+|     - Python imports -> conda packages (biopython, pysam, etc.) |
+|     - Commands -> apt/conda packages (samtools, bowtie2, etc.)  |
++-----------------------------------------------------------------+
+                              |
+                              v
++-----------------------------------------------------------------+
+|  4. Conflict Checking                                           |
+|     - Analyze version compatibility                             |
+|     - Warn about problematic package combinations               |
++-----------------------------------------------------------------+
+                              |
+                              v
++-----------------------------------------------------------------+
+|  5. File Generation                                             |
+|     - Dockerfile with miniconda3 and apt packages               |
+|     - environment.yml for conda                                 |
+|     - Lock files for reproducibility (conda-lock, pip-compile)  |
++-----------------------------------------------------------------+
+                              |
+                              v
++-----------------------------------------------------------------+
+|  6. Validation                                                  |
+|     - Dockerfile syntax check                                   |
+|     - environment.yml YAML validation                           |
+|     - (Optional) Test Docker build and import verification      |
++-----------------------------------------------------------------+
 ```
 
 ---
 
-## 💻 Программный API
+## Key Features
 
-Reciper можно использовать в своих скриптах:
+### AST-Based Import Extraction
 
-### Базовый анализ
+Reciper uses Python's built-in `ast` module to parse Python files and extract all import statements accurately, handling:
+
+- Standard imports (`import numpy`)
+- From imports (`from pandas import DataFrame`)
+- Relative imports
+- Conditional imports
+- Dynamic imports (where statically resolvable)
+
+### Subprocess Command Detection
+
+Reciper scans Python files for external tool invocations through:
+
+- `subprocess.run()`, `subprocess.call()`, `subprocess.Popen()`
+- `os.system()` calls
+- Shell command strings
+
+It detects 80+ bioinformatics and system commands, automatically mapping them to the appropriate conda or apt packages.
+
+### Python-to-Conda Mapping with 100+ Bioinformatics Packages
+
+Reciper maintains a comprehensive mapping database (`reciper/data/package_mappings.yaml`) that converts Python import names to conda package names, including:
+
+- Direct mappings (numpy -> numpy, pandas -> pandas)
+- Alias resolution (sklearn -> scikit-learn)
+- Standard library filtering (os, sys, pathlib are excluded)
+- Version constraint preservation from requirements.txt
+
+### Version Constraint Preservation
+
+When a `requirements.txt` file is found, Reciper preserves version constraints:
+
+```
+# requirements.txt
+numpy>=1.21.0
+pandas==1.3.0
+```
+
+These constraints are carried through to the generated `environment.yml` and Dockerfile.
+
+### Conflict Detection from known_conflicts.yaml
+
+Reciper includes a conflict database (`reciper/data/known_conflicts.yaml`) that checks for known incompatible package combinations:
+
+- Version incompatibilities (e.g., pandas requiring specific numpy versions)
+- Performance warnings
+- Critical installation failures
+
+Conflicts are reported with severity levels (ERROR, WARNING) and actionable recommendations.
+
+### Dockerfile Generation
+
+Reciper generates production-ready Dockerfiles with:
+
+- Multi-stage builds for smaller images
+- Miniconda3 base image
+- Bioinformatics-specific environment variables
+- Both conda and apt package installation
+- Optional pip package installation for conda-unavailable packages
+- Optional project self-installation (detected from setup.py)
+- Python version constraint support
+
+```dockerfile
+FROM continuumio/miniconda3
+
+# Environment variables for bioinformatics tools
+ENV PATH="/opt/conda/envs/bio/bin:$PATH"
+ENV LC_ALL=C.UTF-8
+ENV LANG=C.UTF-8
+
+# Install apt packages
+RUN apt-get update && apt-get install -y ...
+
+# Create conda environment
+COPY environment.yml .
+RUN conda env create -f environment.yml
+
+# Install pip-only packages (if any)
+RUN pip install ...
+
+# Install project itself (if setup.py detected)
+COPY . /app
+RUN pip install /app
+```
+
+### environment.yml Generation
+
+Generates valid conda environment files with:
+
+- Proper YAML syntax
+- Conda channels (conda-forge, bioconda, defaults)
+- Python packages with version constraints
+- Pip subsections for conda-unavailable packages
+
+### Lock File Generation
+
+Reciper supports two lock file formats for full reproducibility:
+
+- **conda-lock**: Generates `conda-lock.yml` via the `conda-lock` tool
+- **pip-compile**: Generates `requirements-locked.txt` via `pip-tools`
+
+Lock files pin exact versions of all transitive dependencies, ensuring bit-for-bit reproducible environments.
+
+### Verification
+
+Reciper validates generated files through multiple checks:
+
+- **Dockerfile syntax check**: Ensures valid Docker build instructions
+- **YAML validation**: Verifies environment.yml is parseable
+- **Container testing** (optional): Builds a test Docker image and verifies imports
+
+### JSON Reporting
+
+Comprehensive JSON reports include:
+
+- Scan summary (files scanned, time taken)
+- Detected imports with file locations
+- Requirements analysis (missing/extra packages)
+- Package mapping details
+- Generated file paths
+- Warnings and conflicts
+
+### Performance Optimizations
+
+Reciper is optimized for large codebases:
+
+- **AST caching**: Parsed ASTs are cached to avoid re-parsing unchanged files
+- **Parallel processing**: Import parsing and scanning run in parallel using ThreadPoolExecutor
+- **File-level caching**: Results are cached per-file hash for incremental analysis
+- **Auto-scaling workers**: Number of workers is auto-calculated based on file count
+
+---
+
+## Supported Bioinformatics Tools
+
+### Conda Packages (Automatic Mapping)
+
+| Category | Packages |
+|----------|----------|
+| **Bioinformatics** | biopython, pysam, pybedtools, cyvcf2 |
+| **Data Science** | pandas, numpy, scipy, scikit-learn |
+| **Visualization** | matplotlib, seaborn, plotly |
+
+### System Utilities (Detected via Subprocess)
+
+| Category | Tools |
+|----------|-------|
+| **Alignment** | bwa, bowtie2, bowtie, star, hisat2 |
+| **BAM/SAM/VCF Processing** | samtools, bcftools, bedtools, vcftools, tabix |
+| **QC and Reporting** | fastqc, multiqc, trimmomatic, cutadapt |
+| **BLAST and Homology Search** | blastn, blastp, blastx, hmmer, muscle, mafft |
+| **Phylogenetics** | raxml, iqtree, mrbayes |
+| **Variant Annotation** | snpEff, VEP, annovar |
+
+Full command-to-package mappings are defined in `reciper/data/command_mappings.yaml`.
+
+---
+
+## Programmatic API
+
+Reciper can be used as a Python library in your own scripts and pipelines.
+
+### Basic Analysis
 
 ```python
 from reciper import analyze
 
-# Быстрый анализ
+# Quick analysis
 result = analyze("./my_pipeline")
-print(f"Найдено пакетов: {len(result.imports)}")
-print(f"Сгенерировано файлов: {result.generated_files}")
+print(f"Packages found: {len(result.imports)}")
+print(f"Generated files: {result.generated_files}")
 
-# С JSON выводом
+# Get JSON output
 json_result = analyze("./my_pipeline", json_output=True)
 print(json_result)
 ```
 
-### Продвинутый анализ с кастомной конфигурацией
+### Advanced Analysis with Custom Configuration
 
 ```python
 from reciper import Analyzer, AnalysisConfig
@@ -303,72 +383,57 @@ config = AnalysisConfig(
     enable_conflict_check=True,
     enable_verification=True,
     parallel_processing=True,
+    max_workers=4,
+    use_cache=True,
 )
 
 analyzer = Analyzer(config)
 result = analyzer.analyze("/path/to/project")
 
-# Доступ к результатам
-print(f"Просканировано файлов: {result.scanned_files}")
-print(f"Conda пакеты: {list(result.conda_packages.keys())}")
-print(f"Apt пакеты: {list(result.apt_packages.keys())}")
-print(f"Конфликты: {result.conflicts}")
+# Access results
+print(f"Files scanned: {result.scanned_files}")
+print(f"Conda packages: {list(result.conda_packages.keys())}")
+print(f"Apt packages: {result.apt_packages}")
+print(f"Conflicts: {result.conflicts}")
 ```
 
-### Использование класса Analyzer
+### Using the Analyzer Class
 
 ```python
 from reciper import Analyzer, AnalysisConfig
 
-# Кастомная конфигурация
+# Custom configuration
 config = AnalysisConfig(
     output_dir="./output",
-    enable_conflict_check=True,
-    enable_verification=True,
-    parallel_processing=True,
-)
-
-# Создание экземпляра
-analyzer = Analyzer(config)
-
-# Анализ директории
-result = analyzer.analyze("/path/to/project")
-
-# Доступ к результатам
-print(f"Просканировано файлов: {result.scanned_files}")
-print(f"Conda пакеты: {len(result.conda_packages)}")
-print(f"Apt пакеты: {len(result.apt_packages)}")
-
-# Конвертация в dict или JSON
-result_dict = result.to_dict()
-result_json = result.to_json(indent=2)
-```
-
-### Продвинутая конфигурация
-
-```python
-from reciper import AnalysisConfig, analyze_with_custom_config
-
-# Custom configuration for specific use cases
-config = AnalysisConfig(
-    output_dir="./custom_output",
     generate_dockerfile=True,
     generate_environment_yml=True,
     generate_lockfile=False,  # Skip lockfile generation
     enable_conflict_check=True,
     enable_verification=False,  # Skip verification
     parallel_processing=True,
-    max_workers=4,  # Limit parallel workers
-    use_cache=True,  # Enable AST caching
+    max_workers=4,
+    use_cache=True,
     json_output=False,
     verbose=True,
 )
 
-# Analyze with custom config
-result = analyze_with_custom_config("/path/to/project", config)
+# Create analyzer instance
+analyzer = Analyzer(config)
+
+# Analyze directory
+result = analyzer.analyze("/path/to/project")
+
+# Access results
+print(f"Files scanned: {result.scanned_files}")
+print(f"Conda packages: {len(result.conda_packages)}")
+print(f"Apt packages: {len(result.apt_packages)}")
+
+# Convert to dict or JSON
+result_dict = result.to_dict()
+result_json = result.to_json(indent=2)
 ```
 
-### Анализ одного файла
+### Analyzing a Single File
 
 ```python
 from reciper import analyze_single_file
@@ -378,7 +443,7 @@ result = analyze_single_file("script.py")
 print(f"Imports in file: {[imp.module for imp in result.imports]}")
 ```
 
-### Интеграция с существующим кодом
+### Integration with Existing Code
 
 ```python
 from reciper import Analyzer
@@ -413,131 +478,106 @@ print(report)
 
 ---
 
-## 🛠️ Технические особенности
-
-### Статический анализ
-- **Рекурсивное сканирование** — поиск .py файлов во всех поддиректориях
-- **AST парсинг** — извлечение import statements с корректной обработкой синтаксиса
-- **Сравнение с requirements.txt** — обнаружение отсутствующих зависимостей
-- **Прогресс в реальном времени** — отображение прогресса сканирования
-- **Кэширование AST** — ускорение повторных запусков
-
-### Маппинг пакетов
-- **Умный маппинг** — конвертация Python → conda с учетом алиасов (sklearn → scikit-learn)
-- **Версионные ограничения** — сохранение версий из requirements.txt (>=, ==, <=)
-- **Стандартная библиотека** — автоматическое определение builtin модулей
-- **100+ биоинформатических пакетов** — biopython, pysam, pybedtools и др.
-
-### Обнаружение системных команд
-- **subprocess анализ** — детектирование вызовов через subprocess.run/call/Popen
-- **os.system парсинг** — поддержка строковых команд
-- **80+ маппингов команд** — samtools, bwa, fastqc, bowtie2 и др.
-- **Автоматический apt** — добавление системных пакетов в Dockerfile
-
-### Проверка конфликтов
-- **Анализ совместимости** — проверка версионных требований между пакетами
-- **Предупреждения об ошибках** — выявление критических конфликтов до сборки
-- **Рекомендации** — предложения по оптимальным версиям
-
-### Валидация окружения
-- **Docker синтаксис** — проверка корректности Dockerfile
-- **Conda синтаксис** — валидация environment.yml
-- **Тестовая сборка** — опциональная сборка контейнера для проверки
-- **Импорт тест** — верификация импортов внутри контейнера
-
----
-
-## 📁 Структура проекта
+## Project Structure
 
 ```
 reciper/
-├── reciper/                    # Основной пакет
-│   ├── __init__.py            # Инициализация пакета
-│   ├── api.py                 # Публичный API
-│   ├── cli.py                 # CLI интерфейс (Click)
-│   ├── parser.py              # Парсинг Python импортов (AST)
-│   ├── mapper.py              # Маппинг Python → conda
-│   ├── generator.py           # Генерация Dockerfile и environment.yml
-│   ├── import_aggregator.py   # Агрегация импортов по файлам
-│   ├── requirements_parser.py # Парсинг requirements.txt
-│   ├── reporter.py            # JSON отчеты
-│   ├── scanner.py             # Рекурсивное сканирование
-│   ├── verifier.py            # Валидация окружения
-│   ├── cache.py               # Кэширование AST
-│   ├── command_detector.py    # Детектирование subprocess вызовов
-│   ├── conflict_detector.py   # Детектирование конфликтов
-│   ├── lockfile_generator.py  # Генерация lock-файлов
-│   ├── error_handling.py      # Обработка ошибок
-│   ├── constants.py           # Константы
-│   ├── utils.py               # Утилиты
-│   ├── conda_parser.py        # Парсинг conda окружений
-│   └── data/                  # Данные маппинга
-│       ├── package_mappings.yaml    # Python → conda
-│       ├── command_mappings.yaml    # Команды → apt
-│       └── known_conflicts.yaml     # Известные конфликты
-├── tests/                     # Тесты
-├── examples/                  # Примеры проектов
-├── docs/                      # Документация
-├── pyproject.toml            # Конфигурация проекта
-├── environment.yml           # Conda окружение проекта
-├── requirements.txt          # Python зависимости
-└── README.md                 # Документация
+├── reciper/                     # Main package
+│   ├── __init__.py             # Package initialization
+│   ├── api.py                  # Public API (analyze, Analyzer, AnalysisConfig)
+│   ├── cli.py                  # CLI interface (Click)
+│   ├── parser.py               # Python import parser (AST)
+│   ├── mapper.py               # Python -> conda mapping
+│   ├── generator.py            # Dockerfile and environment.yml generation
+│   ├── import_aggregator.py    # Import aggregation across files
+│   ├── requirements_parser.py  # requirements.txt parser
+│   ├── reporter.py             # JSON report generation
+│   ├── scanner.py              # Recursive directory scanner
+│   ├── verifier.py             # Environment validation
+│   ├── cache.py                # AST caching
+│   ├── command_detector.py     # Subprocess command detection
+│   ├── conflict_detector.py    # Conflict detection
+│   ├── lockfile_generator.py   # Lock file generation (conda-lock, pip-compile)
+│   ├── error_handling.py       # Error handling utilities
+│   ├── constants.py            # Constants
+│   ├── utils.py                # Utilities
+│   ├── conda_parser.py         # Conda environment parser
+│   └── data/                   # Mapping data
+│       ├── package_mappings.yaml    # Python -> conda
+│       ├── command_mappings.yaml    # Commands -> apt/conda
+│       └── known_conflicts.yaml     # Known package conflicts
+├── tests/                     # Test suite
+├── examples/                  # Example projects
+├── docs/                      # Documentation
+├── pyproject.toml            # Project configuration
+├── environment.yml           # Project conda environment
+├── requirements.txt          # Project Python dependencies
+└── README.md                 # This file
 ```
 
 ---
 
-## 🧪 Установка и запуск
+## Testing and Development
 
-### Быстрая установка
+### Installation for Development
 
 ```bash
-# Через pip (рекомендуется для пользователей)
-pip install reciper
-
-# Через pipx (изолированно)
-pipx install reciper
-
-# Для разработки
 git clone https://github.com/h335h/reciper
 cd reciper
 pip install -e ".[dev]"
 ```
 
-### Запуск тестов
+### Running Tests
 
 ```bash
-# Все тесты
+# All tests
 pytest
 
-# С покрытием кода
+# With coverage
 pytest --cov=reciper
 
-# Конкретный модуль
+# Specific module
 pytest tests/test_command_detector.py
+
+# Parallel test execution
+pytest -n auto
 ```
 
-### Проверка качества кода
+### Code Quality Checks
 
 ```bash
-# Линтер
+# Linting
 ruff check reciper/
 
-# Форматирование
+# Formatting
 black reciper/
 
-# Типизация
+# Type checking
 mypy reciper/
+```
+
+### Pre-commit Hooks
+
+Reciper uses pre-commit for automated quality checks:
+
+```bash
+# Install pre-commit hooks
+pre-commit install
+
+# Run hooks on all files
+pre-commit run --all-files
 ```
 
 ---
 
-## 🔧 Конфигурация
+## Configuration
 
-### Маппинг пакетов
+Reciper uses YAML mapping files for package and command resolution. These can be extended by editing the files in `reciper/data/`.
 
-Reciper использует YAML файлы для маппинга:
+### Package Mappings (`reciper/data/package_mappings.yaml`)
 
-**`reciper/data/package_mappings.yaml`**:
+Defines how Python import names map to conda package names:
+
 ```yaml
 primary_mappings:
   numpy: "numpy"
@@ -551,7 +591,10 @@ standard_library:
   pathlib: ""
 ```
 
-**`reciper/data/command_mappings.yaml`**:
+### Command Mappings (`reciper/data/command_mappings.yaml`)
+
+Maps command names detected in subprocess calls to apt or conda packages:
+
 ```yaml
 samtools: samtools
 bwa: bwa
@@ -559,40 +602,24 @@ fastqc: fastqc
 bowtie2: bowtie2
 ```
 
-Вы можете расширять маппинги, редактируя эти файлы или создавая свои.
+Most bioinformatics tools are installed via conda/bioconda rather than apt. The mapping file distinguishes between conda-only tools (prefixed with `conda:`) and apt-installable tools.
 
----
+### Known Conflicts (`reciper/data/known_conflicts.yaml`)
 
-## 📖 Подробные примеры использования
+Defines known package incompatibilities:
 
-### Анализ биоинформатического проекта
-
-```bash
-# Базовый анализ с отображением прогресса
-reciper analyze ./my_bioinformatics_project
-
-# Генерация файлов в указанной директории
-reciper analyze ./my_bioinformatics_project --output ./environments
-
-# JSON отчет для программной обработки
-reciper analyze ./my_bioinformatics_project --json --report-file analysis.json
-```
-
-### Анализ одного файла
-
-```bash
-# Анализ отдельного Python файла
-reciper analyze script.py
-
-# Анализ с кастомным выводом
-reciper analyze pipeline.py --output ./docker
+```yaml
+conflicts:
+  - packages: [pandas, numpy]
+    severity: WARNING
+    message: "For optimal performance, use numpy>=1.21.0 with pandas>=1.3.0"
 ```
 
 ---
 
-## 📊 Структура JSON отчета
+## JSON Report Structure
 
-Инструмент генерирует подробные JSON отчеты со следующей структурой:
+When using `--report-file` or `--json`, Reciper generates a detailed report:
 
 ```json
 {
@@ -623,12 +650,6 @@ reciper analyze pipeline.py --output ./docker
       "conda_package": "numpy",
       "version_constraint": ">=1.21.0",
       "mapping_source": "primary_mappings"
-    },
-    {
-      "python_package": "biopython",
-      "conda_package": "biopython",
-      "version_constraint": null,
-      "mapping_source": "primary_mappings"
     }
   ],
   "generated_files": {
@@ -649,48 +670,67 @@ reciper analyze pipeline.py --output ./docker
 
 ---
 
-## 🚀 Как это работает?
+## Limitations and Future Improvements
 
-1. **Сканирование**: Инструмент рекурсивно сканирует целевую директорию на наличие Python файлов
-2. **Парсинг**: Каждый Python файл парсится для извлечения import statements
-3. **Агрегация**: Импорты агрегируются по всем файлам, удаляя дубликаты
-4. **Анализ требований**: Если существует requirements.txt, он парсится и сравнивается с обнаруженными импортами
-5. **Маппинг**: Имена Python пакетов маппятся на имена conda пакетов с использованием базы данных маппингов
-6. **Генерация**: Файлы Dockerfile и environment.yml генерируются с замаппленными пакетами
-7. **Отчетность**: Генерируется подробный JSON отчет (если запрошено)
+### Current Limitations
 
----
+- Supports Python imports only (not other languages like R or Julia)
+- Basic version constraint handling (complex constraints may not be fully preserved)
+- Focused on conda and Docker environment generation
+- Static mapping files (not dynamically updated from conda repositories)
+- Single-file JSON reporting is limited compared to directory analysis
 
-## ⚠️ Ограничения и будущие улучшения
+### Planned Features
 
-### Текущие ограничения
-- Поддерживает только Python импорты (не другие языки)
-- Базовая обработка версионных ограничений
-- Ограничено conda и Docker генерацией окружений
-- Единый файл маппингов (не динамически обновляемый)
-
-### Планируемые функции
-- Поддержка дополнительныхых менеджеров пакетов (pip, apt, и др.)
-- Динамическое обновление маппингов из репозиториев conda
-- Поддержка R и других биоинформатических языков
-- Интеграция с CI/CD пайплайнами
-- Веб-интерфейс для визуализации
+- Support for additional package managers (pip-native, apt, and others)
+- Dynamic mapping updates from conda repositories
+- R and other bioinformatics language support
+- CI/CD pipeline integration
+- Web interface for dependency visualization
+- Incremental analysis (only re-scan changed files)
+- Custom mapping file support via configuration
+- Multi-platform Docker builds (linux/amd64, linux/arm64)
 
 ---
 
-## 🤝 Участие в разработке
+## Contributing
 
-Вклад в проект приветствуется! Смотрите раздел установки для разработки выше, чтобы начать.
+Contributions are welcome! Here's how to get started:
 
-1. Форкните репозиторий
-2. Создайте feature ветку
-3. Внесите изменения
-4. Добавьте тесты для нового функционала
-5. Убедитесь, что все тесты проходят
-6. Отправьте pull request
+1. **Fork the repository**
+2. **Create a feature branch** (`git checkout -b feature/my-feature`)
+3. **Make your changes**
+4. **Add tests for new functionality**
+5. **Ensure all tests pass** (`pytest`)
+6. **Run code quality checks** (`ruff check`, `black`, `mypy`)
+7. **Submit a pull request**
+
+### Development Setup
+
+```bash
+git clone https://github.com/h335h/reciper
+cd reciper
+pip install -e ".[dev]"
+pre-commit install
+```
+
+### Guidelines
+
+- Follow the existing code style (enforced by Black and Ruff)
+- Add type hints to all new functions
+- Write tests for new functionality
+- Update documentation for user-facing changes
 
 ---
 
-## 📄 Лицензия
+## License
 
-MIT
+MIT License
+
+Copyright (c) 2024 Reciper Contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
