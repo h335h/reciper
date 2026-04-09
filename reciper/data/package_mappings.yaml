@@ -1,0 +1,475 @@
+# Package mappings for RECIPER static analyzer
+# Maps Python package names to conda package names
+# Extracted from reciper/reciper/mapper.py
+
+primary_mappings:
+  # Standard library modules (empty string means no conda package needed)
+  os: ""
+  sys: ""
+  collections: ""
+  itertools: ""
+  functools: ""
+  datetime: ""
+  json: ""
+  re: ""
+  math: ""
+  random: ""
+  statistics: ""
+  hashlib: ""
+  ssl: ""
+  socket: ""
+  subprocess: ""
+  multiprocessing: ""
+  threading: ""
+  asyncio: ""
+  typing: ""
+  dataclasses: ""
+  enum: ""
+  abc: ""
+  contextlib: ""
+  copy: ""
+  decimal: ""
+  fractions: ""
+  csv: ""
+  xml: ""
+  html: ""
+  urllib: ""
+  email: ""
+  zipfile: ""
+  tarfile: ""
+  gzip: ""
+  bz2: ""
+  lzma: ""
+  pickle: ""
+  shelve: ""
+  sqlite3: ""
+  tkinter: ""
+  uuid: ""
+  base64: ""
+  binascii: ""
+  hmac: ""
+  secrets: ""
+  time: ""
+  calendar: ""
+  locale: ""
+  gettext: ""
+  string: ""
+  textwrap: ""
+  unicodedata: ""
+  reprlib: ""
+  pprint: ""
+  inspect: ""
+  ast: ""
+  symtable: ""
+  tokenize: ""
+  keyword: ""
+  token: ""
+  opcode: ""
+  dis: ""
+  gc: ""
+  sysconfig: ""
+  site: ""
+  builtins: ""
+  __future__: ""
+  warnings: ""
+  traceback: ""
+  linecache: ""
+  types: ""
+  weakref: ""
+  atexit: ""
+  signal: ""
+  mmap: ""
+  errno: ""
+  ctypes: ""
+  msvcrt: ""
+  winreg: ""
+  posix: ""
+  pwd: ""
+  grp: ""
+  spwd: ""
+  crypt: ""
+  termios: ""
+  tty: ""
+  pty: ""
+  fcntl: ""
+  resource: ""
+  syslog: ""
+  select: ""
+  selectors: ""
+  asyncore: ""
+  asynchat: ""
+  socketserver: ""
+  http: ""
+  ftplib: ""
+  poplib: ""
+  imaplib: ""
+  nntplib: ""
+  smtplib: ""
+  smtpd: ""
+  telnetlib: ""
+  concurrent: ""
+  queue: ""
+  _thread: ""
+  dummy_threading: ""
+  contextvars: ""
+  
+  # Common packages
+  numpy: "numpy"
+  pandas: "pandas"
+  scikit-learn: "scikit-learn"
+  sklearn: "scikit-learn"  # Common alias for scikit-learn
+  matplotlib: "matplotlib"
+  scipy: "scipy"
+  requests: "requests"
+  tensorflow: "tensorflow"
+  torch: "pytorch"
+  pytorch: "pytorch"
+  seaborn: "seaborn"
+  plotly: "plotly"
+  dask: "dask"
+  xarray: "xarray"
+  networkx: "networkx"
+  sympy: "sympy"
+  statsmodels: "statsmodels"
+  pillow: "pillow"
+  opencv-python: "opencv"
+  flask: "flask"
+  django: "django"
+  sqlalchemy: "sqlalchemy"
+  pytest: "pytest"
+  jupyter: "jupyter"
+  notebook: "notebook"
+  ipython: "ipython"
+  black: "black"
+  flake8: "flake8"
+  mypy: "mypy"
+  isort: "isort"
+  pylint: "pylint"
+  yaml: "pyyaml"
+  pyyaml: "pyyaml"
+  toml: "toml"
+  tomli: "tomli"
+  tomlkit: "tomlkit"
+  click: "click"
+  typer: "typer"
+  rich: "rich"
+  tqdm: "tqdm"
+  loguru: "loguru"
+  colorama: "colorama"
+  pathlib: "pathlib"
+  pathlib2: "pathlib2"
+  path: "path"
+  pathlib3: "pathlib3"
+  
+  # Bioinformatics packages
+  Bio: "biopython"
+  biopython: "biopython"
+  pysam: "pysam"
+  samtools: "samtools"
+  bcftools: "bcftools"
+  bwa: "bwa"
+  bowtie2: "bowtie2"
+  star: "star"
+  hisat2: "hisat2"
+  bedtools: "bedtools"
+  vcftools: "vcftools"
+  plink: "plink"
+  gatk: "gatk"
+  picard: "picard"
+  fastqc: "fastqc"
+  multiqc: "multiqc"
+  trimmomatic: "trimmomatic"
+  cutadapt: "cutadapt"
+  seqtk: "seqtk"
+  blast: "blast"
+  hmmer: "hmmer"
+  muscle: "muscle"
+  mafft: "mafft"
+  raxml: "raxml"
+  iqtree: "iqtree"
+  snpeff: "snpeff"
+  snpsift: "snpsift"
+  vep: "ensembl-vep"
+  "ensembl-vep": "ensembl-vep"
+
+detailed_mappings:
+  # Used for map_to_conda_with_details() function
+  # Each entry includes conda_name and optional version_constraint
+  numpy:
+    conda_name: "numpy"
+    version_constraint: ""
+  pandas:
+    conda_name: "pandas"
+    version_constraint: ""
+  scikit-learn:
+    conda_name: "scikit-learn"
+    version_constraint: ""
+  sklearn:
+    conda_name: "scikit-learn"
+    version_constraint: ""
+  matplotlib:
+    conda_name: "matplotlib"
+    version_constraint: ""
+  scipy:
+    conda_name: "scipy"
+    version_constraint: ""
+  requests:
+    conda_name: "requests"
+    version_constraint: ""
+  tensorflow:
+    conda_name: "tensorflow"
+    version_constraint: ""
+  torch:
+    conda_name: "pytorch"
+    version_constraint: ""
+  pytorch:
+    conda_name: "pytorch"
+    version_constraint: ""
+  seaborn:
+    conda_name: "seaborn"
+    version_constraint: ""
+  plotly:
+    conda_name: "plotly"
+    version_constraint: ""
+  dask:
+    conda_name: "dask"
+    version_constraint: ""
+  xarray:
+    conda_name: "xarray"
+    version_constraint: ""
+  networkx:
+    conda_name: "networkx"
+    version_constraint: ""
+  sympy:
+    conda_name: "sympy"
+    version_constraint: ""
+  statsmodels:
+    conda_name: "statsmodels"
+    version_constraint: ""
+  pillow:
+    conda_name: "pillow"
+    version_constraint: ""
+  opencv-python:
+    conda_name: "opencv"
+    version_constraint: ""
+  flask:
+    conda_name: "flask"
+    version_constraint: ""
+  django:
+    conda_name: "django"
+    version_constraint: ""
+  sqlalchemy:
+    conda_name: "sqlalchemy"
+    version_constraint: ""
+  pytest:
+    conda_name: "pytest"
+    version_constraint: ""
+  jupyter:
+    conda_name: "jupyter"
+    version_constraint: ""
+  notebook:
+    conda_name: "notebook"
+    version_constraint: ""
+  ipython:
+    conda_name: "ipython"
+    version_constraint: ""
+  black:
+    conda_name: "black"
+    version_constraint: ""
+  flake8:
+    conda_name: "flake8"
+    version_constraint: ""
+  mypy:
+    conda_name: "mypy"
+    version_constraint: ""
+  isort:
+    conda_name: "isort"
+    version_constraint: ""
+  pylint:
+    conda_name: "pylint"
+    version_constraint: ""
+  yaml:
+    conda_name: "pyyaml"
+    version_constraint: ""
+  pyyaml:
+    conda_name: "pyyaml"
+    version_constraint: ""
+  toml:
+    conda_name: "toml"
+    version_constraint: ""
+  tomli:
+    conda_name: "tomli"
+    version_constraint: ""
+  tomlkit:
+    conda_name: "tomlkit"
+    version_constraint: ""
+  click:
+    conda_name: "click"
+    version_constraint: ""
+  typer:
+    conda_name: "typer"
+    version_constraint: ""
+  rich:
+    conda_name: "rich"
+    version_constraint: ""
+  tqdm:
+    conda_name: "tqdm"
+    version_constraint: ""
+  loguru:
+    conda_name: "loguru"
+    version_constraint: ""
+  colorama:
+    conda_name: "colorama"
+    version_constraint: ""
+
+  # Bioinformatics packages
+  Bio:
+    conda_name: "biopython"
+    version_constraint: ""
+  biopython:
+    conda_name: "biopython"
+    version_constraint: ""
+  pysam:
+    conda_name: "pysam"
+    version_constraint: ""
+  samtools:
+    conda_name: "samtools"
+    version_constraint: ""
+  bcftools:
+    conda_name: "bcftools"
+    version_constraint: ""
+  bwa:
+    conda_name: "bwa"
+    version_constraint: ""
+  bowtie2:
+    conda_name: "bowtie2"
+    version_constraint: ""
+  star:
+    conda_name: "star"
+    version_constraint: ""
+  hisat2:
+    conda_name: "hisat2"
+    version_constraint: ""
+  bedtools:
+    conda_name: "bedtools"
+    version_constraint: ""
+  vcftools:
+    conda_name: "vcftools"
+    version_constraint: ""
+  plink:
+    conda_name: "plink"
+    version_constraint: ""
+  gatk:
+    conda_name: "gatk"
+    version_constraint: ""
+  picard:
+    conda_name: "picard"
+    version_constraint: ""
+  fastqc:
+    conda_name: "fastqc"
+    version_constraint: ""
+  multiqc:
+    conda_name: "multiqc"
+    version_constraint: ""
+  trimmomatic:
+    conda_name: "trimmomatic"
+    version_constraint: ""
+  cutadapt:
+    conda_name: "cutadapt"
+    version_constraint: ""
+  seqtk:
+    conda_name: "seqtk"
+    version_constraint: ""
+  blast:
+    conda_name: "blast"
+    version_constraint: ""
+  hmmer:
+    conda_name: "hmmer"
+    version_constraint: ""
+  muscle:
+    conda_name: "muscle"
+    version_constraint: ""
+  mafft:
+    conda_name: "mafft"
+    version_constraint: ""
+  raxml:
+    conda_name: "raxml"
+    version_constraint: ""
+  iqtree:
+    conda_name: "iqtree"
+    version_constraint: ""
+  snpeff:
+    conda_name: "snpeff"
+    version_constraint: ""
+  snpsift:
+    conda_name: "snpsift"
+    version_constraint: ""
+  vep:
+    conda_name: "ensembl-vep"
+    version_constraint: ""
+  ensembl-vep:
+    conda_name: "ensembl-vep"
+    version_constraint: ""
+  pandas:
+    conda_name: "pandas"
+    version_constraint: ""
+  numpy:
+    conda_name: "numpy"
+    version_constraint: ""
+  scipy:
+    conda_name: "scipy"
+    version_constraint: ""
+  matplotlib:
+    conda_name: "matplotlib"
+    version_constraint: ""
+  seaborn:
+    conda_name: "seaborn"
+    version_constraint: ""
+  plotly:
+    conda_name: "plotly"
+    version_constraint: ""
+  scikit-learn:
+    conda_name: "scikit-learn"
+    version_constraint: ""
+  sklearn:
+    conda_name: "scikit-learn"
+    version_constraint: ""
+  tensorflow:
+    conda_name: "tensorflow"
+    version_constraint: ""
+  torch:
+    conda_name: "pytorch"
+    version_constraint: ""
+  pytorch:
+    conda_name: "pytorch"
+    version_constraint: ""
+  keras:
+    conda_name: "keras"
+    version_constraint: ""
+  xarray:
+    conda_name: "xarray"
+    version_constraint: ""
+  dask:
+    conda_name: "dask"
+    version_constraint: ""
+  zarr:
+    conda_name: "zarr"
+    version_constraint: ""
+  h5py:
+    conda_name: "h5py"
+    version_constraint: ""
+  pydantic:
+    conda_name: "pydantic"
+    version_constraint: ""
+  pydantic-settings:
+    conda_name: "pydantic-settings"
+    version_constraint: ""
+  pydantic-ai:
+    conda_name: "pydantic-ai"
+    version_constraint: ""
+  pydantic-ai-settings:
+    conda_name: "pydantic-ai-settings"
+    version_constraint: ""
+
+# Note: Standard library modules are not included in detailed_mappings
+# as they don't require conda packages

@@ -1,0 +1,137 @@
+# Command to apt package mappings for Reciper
+# Maps command names (as detected in Python code) to apt package names
+
+# System utilities
+ls: coreutils
+grep: grep
+awk: gawk
+sed: sed
+find: findutils
+xargs: findutils
+cut: coreutils
+sort: coreutils
+uniq: coreutils
+wc: coreutils
+head: coreutils
+tail: coreutils
+cat: coreutils
+mkdir: coreutils
+rm: coreutils
+cp: coreutils
+mv: coreutils
+chmod: coreutils
+chown: coreutils
+ln: coreutils
+
+# Network utilities
+curl: curl
+wget: wget
+ssh: openssh-client
+scp: openssh-client
+rsync: rsync
+ping: iputils-ping
+netstat: net-tools
+ifconfig: net-tools
+
+# Compression/archiving
+tar: tar
+gzip: gzip
+bzip2: bzip2
+xz: xz-utils
+unzip: unzip
+zip: zip
+
+# Development tools
+git: git
+make: make
+cmake: cmake
+gcc: gcc
+g++: g++
+python: python3
+python3: python3
+pip: python3-pip
+pip3: python3-pip
+conda: conda
+docker: docker.io
+jupyter: jupyter
+node: nodejs
+npm: npm
+java: default-jre
+javac: default-jdk
+
+# Text processing
+vim: vim
+nano: nano
+emacs: emacs
+less: less
+more: util-linux
+
+# Bioinformatics tools (common)
+samtools: samtools
+bcftools: bcftools
+bwa: bwa
+bowtie2: bowtie2
+bowtie: bowtie
+star: star
+hisat2: hisat2
+bedtools: bedtools
+vcftools: vcftools
+plink: plink
+gatk: gatk
+picard: picard
+fastqc: fastqc
+multiqc: multiqc
+trimmomatic: trimmomatic
+cutadapt: cutadapt
+seqtk: seqtk
+blastn: ncbi-blast+
+blastp: ncbi-blast+
+blastx: ncbi-blast+
+tblastn: ncbi-blast+
+tblastx: ncbi-blast+
+makeblastdb: ncbi-blast+
+hmmscan: hmmer
+hmmsearch: hmmer
+muscle: muscle
+mafft: mafft
+raxml: raxml
+iqtree: iqtree
+snpEff: snpeff
+SnpSift: snpsift
+vep: ensembl-vep
+
+# R/Bioconductor
+R: r-base
+Rscript: r-base
+
+# Database tools
+sqlite3: sqlite3
+mysql: mysql-client
+psql: postgresql-client
+
+# Monitoring/performance
+top: procps
+htop: htop
+ps: procps
+free: procps
+df: coreutils
+du: coreutils
+
+# Graphics/plotting
+convert: imagemagick
+display: imagemagick
+gs: ghostscript
+
+# Other common tools
+time: time
+date: coreutils
+which: debianutils
+file: file
+locate: mlocate
+updatedb: mlocate
+crontab: cron
+at: at
+cvs: cvs
+svn: subversion
+hg: mercurial
+bzr: bzr
