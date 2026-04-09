@@ -1,9 +1,0 @@
-[console_scripts]
-reciper = reciper.cli:cli
-
-[pipx.run]
-reciper = reciper.cli:main
-
-[reciper.api]
-analyze = reciper.api:analyze
-analyzer = reciper.api:Analyzer
