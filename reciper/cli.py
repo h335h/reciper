@@ -11,9 +11,18 @@ from reciper.utils import print_error
 
 @click.group()
 def cli() -> None:
-    """Reciper - Workflow Assumption Compiler (Minimal Viable Product)
+    """Reciper — One-Command Reproducible Environments for Bioinformatics Pipelines
 
-    Generate reproducible environments for bioinformatics pipelines.
+    Automatically generate working Docker and conda environments for bioinformatics pipelines.
+    
+    Features:
+    - Scan Python code and detect all imports
+    - Discover external tool calls (samtools, bwa, fastqc, etc.)
+    - Generate Dockerfile and environment.yml with correct dependencies
+    - Check package compatibility and find conflicts
+    - Validate environment through test Docker builds
+    
+    One command to make your pipeline reproducible and shareable.
     """
     pass
 
@@ -319,7 +328,7 @@ def analyze_static(
     no_cache: bool = False,
 ) -> bool:
     """
-    Orchestrate the static analyzer MVP flow: parse → map → generate.
+    Orchestrate the static analyzer flow: parse → map → generate.
 
     Supports both single files and directories.
 
@@ -487,8 +496,11 @@ def analyze(
     no_cache: bool,
 ) -> None:
     """
-    Static analyzer MVP: Parse Python imports and generate Docker/conda files.
-
+    Analyze Python code and generate reproducible environments.
+    
+    Scans Python files for imports, detects external tool calls,
+    and generates Dockerfile, environment.yml, and lock files.
+    
     PATH: Path to Python source file or directory to analyze
     """
     success = analyze_static(
@@ -525,7 +537,7 @@ def main() -> None:
     ):
         # Parse with argparse for standalone static analyzer usage
         parser = argparse.ArgumentParser(
-            description="Static analyzer MVP: Parse Python imports and generate Docker/conda files"
+            description="Analyze Python code and generate reproducible environments for bioinformatics pipelines"
         )
         parser.add_argument(
             "path", help="Path to Python source file or directory to analyze"
