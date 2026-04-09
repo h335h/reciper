@@ -66,39 +66,39 @@ emacs: emacs
 less: less
 more: util-linux
 
-# Bioinformatics tools (common)
-samtools: samtools
-bcftools: bcftools
-bwa: bwa
-bowtie2: bowtie2
-bowtie: bowtie
-star: star
-hisat2: hisat2
-bedtools: bedtools
-vcftools: vcftools
-plink: plink
-gatk: gatk
-picard: picard
-fastqc: fastqc
-multiqc: multiqc
-trimmomatic: trimmomatic
-cutadapt: cutadapt
-seqtk: seqtk
-blastn: ncbi-blast+
-blastp: ncbi-blast+
-blastx: ncbi-blast+
-tblastn: ncbi-blast+
-tblastx: ncbi-blast+
-makeblastdb: ncbi-blast+
-hmmscan: hmmer
-hmmsearch: hmmer
-muscle: muscle
-mafft: mafft
-raxml: raxml
-iqtree: iqtree
-snpEff: snpeff
-SnpSift: snpsift
-vep: ensembl-vep
+# Bioinformatics tools
+# NOTE: Most bioinformatics tools are installed via conda/bioconda, NOT apt.
+# Commands listed here as "conda:PACKAGE" should be installed via conda, not apt.
+# Commands listed with a plain apt package name are fallbacks for tools
+# that happen to have apt packages.
+#
+# Conda-only bio tools (these are filtered from apt, should come from conda):
+hmmsearch: "conda:hmmer"
+hmmscan: "conda:hmmer"
+tblastn: "conda:ncbi-blast+"
+tblastx: "conda:ncbi-blast+"
+blastn: "conda:ncbi-blast+"
+blastp: "conda:ncbi-blast+"
+blastx: "conda:ncbi-blast+"
+makeblastdb: "conda:ncbi-blast+"
+etraining: "conda:augustus"
+BuildDatabase: "conda:repeatmodeler"
+RepeatMasker: "conda:repeatmasker"
+RepeatModeler: "conda:repeatmodeler"
+emapper.py: "conda:eggnog-mapper"
+gmap_build: "conda:gmap"
+gmap: "conda:gmap"
+gmap_gsnapp: "conda:gmap"
+phyml: "conda:phyml"
+snap: "conda:snap"
+signalp6: "conda:signalp6"
+augustus: "conda:augustus"
+diamond: "conda:diamond"
+exonerate: "conda:exonerate"
+minimap2: "conda:minimap2"
+mafft: "conda:mafft"
+trimal: "conda:trimal"
+hmmsearch: "conda:hmmer"
 
 # R/Bioconductor
 R: r-base

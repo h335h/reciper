@@ -608,12 +608,78 @@ def parse_setup_py(file_path: Path) -> list[PackageRequirement]:
 
     Returns:
         List of PackageRequirement objects
-
-    Note: This is a simplified parser that only handles basic cases.
     """
-    # TODO: Implement setup.py parsing in Week 2
-    # For now, return empty list
-    return []
+    requirements: list[PackageRequirement] = []
+
+    try:
+        with open(file_path, encoding="utf-8") as f:
+            content = f.read()
+    except (OSError, UnicodeDecodeError):
+        return requirements
+
+    import ast
+    try:
+        tree = ast.parse(content, filename=str(file_path))
+    except SyntaxError:
+        return requirements
+
+    # First pass: collect top-level variable assignments we care about
+    var_values: dict[str, ast.expr] = {}
+    for node in ast.iter_child_nodes(tree):
+        if isinstance(node, ast.Assign):
+            for target in node.targets:
+                if isinstance(target, ast.Name):
+                    var_values[target.id] = node.value
+
+    # Second pass: find setup() call and extract arguments
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Call):
+            continue
+
+        func = node.func
+        is_setup = isinstance(func, ast.Name) and func.id == "setup"
+        if not is_setup:
+            continue
+
+        for kw in node.keywords:
+            if kw.arg is None:
+                continue
+
+            # Resolve: could be a direct value or a variable reference
+            value = kw.value
+            if isinstance(value, ast.Name) and value.id in var_values:
+                value = var_values[value.id]
+
+            if kw.arg == "install_requires" and isinstance(value, (ast.List, ast.Tuple)):
+                for elt in value.elts:
+                    if isinstance(elt, ast.Constant) and isinstance(elt.value, str):
+                        pkg = _parse_req_string(elt.value)
+                        requirements.append(PackageRequirement(
+                            name=pkg["name"],
+                            version_constraint=pkg.get("version"),
+                            source="setup.py (install_requires)",
+                            editable=False,
+                        ))
+
+            elif kw.arg == "python_requires" and isinstance(value, ast.Constant):
+                python_ver = value.value
+                requirements.append(PackageRequirement(
+                    name="python",
+                    version_constraint=python_ver,
+                    source="setup.py (python_requires)",
+                    editable=False,
+                ))
+
+    return requirements
+
+
+def _parse_req_string(req: str) -> dict[str, str | None]:
+    """Parse a requirement string like 'biopython<1.80' into name and version."""
+    for op in [">=", "<=", "!=", "~=", "==", ">", "<"]:
+        if op in req:
+            parts = req.split(op, 1)
+            return {"name": parts[0].strip().lower(), "version": f"{op}{parts[1].strip()}"}
+    return {"name": req.strip().lower(), "version": None}
 
 
 def parse_dependency_file(file_path: Path) -> list[PackageRequirement]:

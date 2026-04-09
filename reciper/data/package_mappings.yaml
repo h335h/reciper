@@ -119,6 +119,7 @@ primary_mappings:
   scikit-learn: "scikit-learn"
   sklearn: "scikit-learn"  # Common alias for scikit-learn
   matplotlib: "matplotlib"
+  pylab: "matplotlib"
   scipy: "scipy"
   requests: "requests"
   tensorflow: "tensorflow"
@@ -160,37 +161,254 @@ primary_mappings:
   pathlib2: "pathlib2"
   path: "path"
   pathlib3: "pathlib3"
+  psutil: "psutil"
+  natsort: "natsort"
+  distro: "distro"
+  packaging: "packaging"
+  xlrd: "xlrd"
+  ete3: "ete3"
+  goatools: "goatools"
+  setuptools: "setuptools"
+  pip: "pip"
+  wheel: "wheel"
   
   # Bioinformatics packages
   Bio: "biopython"
   biopython: "biopython"
   pysam: "pysam"
-  samtools: "samtools"
-  bcftools: "bcftools"
-  bwa: "bwa"
-  bowtie2: "bowtie2"
-  star: "star"
-  hisat2: "hisat2"
-  bedtools: "bedtools"
-  vcftools: "vcftools"
-  plink: "plink"
-  gatk: "gatk"
-  picard: "picard"
-  fastqc: "fastqc"
-  multiqc: "multiqc"
-  trimmomatic: "trimmomatic"
-  cutadapt: "cutadapt"
-  seqtk: "seqtk"
-  blast: "blast"
+  goatools: "goatools"
+  distro: "distro"
+  packaging: "packaging"
+  xlrd: "xlrd"
+  ete3: "ete3"
+
+  # Command name → conda package mappings (binary names that differ from package name)
+  # These are detected as subprocess calls but map to conda packages
+  hmmsearch: "hmmer"
+  hmmscan: "hmmer"
+  tblastn: "ncbi-blast+"
+  tblastx: "ncbi-blast+"
+  blastn: "ncbi-blast+"
+  blastp: "ncbi-blast+"
+  blastx: "ncbi-blast+"
+  makeblastdb: "ncbi-blast+"
+  etraining: "augustus"
+  BuildDatabase: "repeatmodeler"
+  RepeatMasker: "repeatmasker"
+  RepeatModeler: "repeatmodeler"
+  emapper.py: "eggnog-mapper"
+  gmap_build: "gmap"
+  gmap_gsnapp: "gmap"
+  phyml: "phyml"
+  snap: "snap"
+  signalp6: "signalp6"
+  trnascan-se: "trnascan-se"
+
+  # Gene prediction & annotation
+  augustus: "augustus"
+  glimmerhmm: "glimmerhmm"
+  snap: "snap"
+  codingquarry: "codingquarry"
+  genemark: "genemark"
+  trnascan: "trnascan-se"
+  trnascan-se: "trnascan-se"
+  tRNAscan: "trnascan-se"
+
+  # Evidence integration
+  evidencemodeler: "evidencemodeler"
+  pasa: "pasa"
+
+  # Sequence alignment/search
+  diamond: "diamond"
   hmmer: "hmmer"
-  muscle: "muscle"
+  exonerate: "exonerate"
+  blat: "blat"
+  minimap2: "minimap2"
+  ncbi-blast: "ncbi-blast+"
+  blast: "ncbi-blast+"
+  tantan: "tantan"
+  bedtools: "bedtools"
+  samtools: "samtools"
+  bamtools: "bamtools"
+
+  # RNA-seq & transcriptomics
+  trinity: "trinity"
+  hisat2: "hisat2"
+  stringtie: "stringtie"
+  kallisto: "kallisto"
+  salmon: "salmon"
+  trimmomatic: "trimmomatic"
+  fastqc: "fastqc"
+
+  # Multiple sequence alignment & phylogenetics
   mafft: "mafft"
   raxml: "raxml"
   iqtree: "iqtree"
+  trimal: "trimal"
+  proteinortho: "proteinortho"
+  muscle: "muscle"
+  fasttree: "fasttree"
+
+  # Genome utilities
+  seqtk: "seqtk"
+  pigz: "pigz"
+  pbzip2: "pbzip2"
+  bcftools: "bcftools"
+  vcftools: "vcftools"
+  tabix: "htslib"
+  bgzip: "htslib"
+  htslib: "htslib"
+  bedops: "bedops"
+  ucsc-fatools: "ucsc-fatools"
+  ucsc-pslcdnafilter: "ucsc-pslcdnafilter"
+  ucsc-blatsort: "ucsc-blatsort"
+
+  # Repeat masking
+  repeatmasker: "repeatmasker"
+  repeatmodeler: "repeatmodeler"
+  tantan: "tantan"
+
+  # Functional annotation
+  interproscan: "interproscan"
+  signalp: "signalp"
+  signalp6: "signalp6"
+  phobius: "phobius"
+  tmhmm: "tmhmm"
+  deepsig: "deepsig"
+  emapper: "eggnog-mapper"
+  eggnog: "eggnog-mapper"
+
+  # Table/format conversion
+  tbl2asn: "tbl2asn"
+  agg: "agg"
+  gffread: "gffread"
+  gffutils: "gffutils"
+  pybedtools: "pybedtools"
+
+  # Database & remote
+  entrez-direct: "entrez-direct"
+  ncbi-datasets: "ncbi-datasets-cli"
+  wget: "wget"
+
+  # Perl modules (often needed by bio tools)
+  perl: "perl"
+  perl-yaml: "perl-yaml"
+  perl-json: "perl-json"
+  perl-dbi: "perl-dbi"
+  perl-dbd-mysql: "perl-dbd-mysql"
+  perl-dbd-sqlite: "perl-dbd-sqlite"
+  perl-file-which: "perl-file-which"
+  perl-local-lib: "perl-local-lib"
+  perl-clone: "perl-clone"
+  perl-hash-merge: "perl-hash-merge"
+  perl-soap-lite: "perl-soap-lite"
+  perl-logger-simple: "perl-logger-simple"
+  perl-scalar-util-numeric: "perl-scalar-util-numeric"
+  perl-math-utils: "perl-math-utils"
+  perl-mce: "perl-mce"
+  perl-text-soundex: "perl-text-soundex"
+  perl-parallel-forkmanager: "perl-parallel-forkmanager"
+  perl-db-file: "perl-db-file"
+  perl-perl4-corelibs: "perl-perl4-corelibs"
+  perl-lwp-useragent: "perl-lwp-useragent"
+  perl-uri-escape: "perl-uri-escape"
+  perl-tie-file: "perl-tie-file"
+  perl-pod-usage: "perl-pod-usage"
+  perl-getopt-long: "perl-getopt-long"
+  perl-carp: "perl-carp"
+  perl-threads: "perl-threads"
+  perl-data-dumper: "perl-data-dumper"
+
+  # Assembly & scaffolding
+  spades: "spades"
+  megahit: "megahit"
+  unicycler: "unicycler"
+  canu: "canu"
+  flye: "flye"
+  miniasm: "miniasm"
+  racon: "racon"
+  pilon: "pilon"
+  polish: "polca"
+
+  # Variant calling
+  freebayes: "freebayes"
+  varscan: "varscan"
+  deepvariant: "deepvariant"
   snpeff: "snpeff"
   snpsift: "snpsift"
   vep: "ensembl-vep"
-  "ensembl-vep": "ensembl-vep"
+  ensembl-vep: "ensembl-vep"
+
+  # Metagenomics
+  kraken2: "kraken2"
+  bracken: "bracken"
+  metaphlan: "metaphlan"
+  humann: "humann"
+  centrifuge: "centrifuge"
+  diamond: "diamond"
+
+  # Single-cell
+  cellranger: "cellranger"
+  alevin: "salmon"
+  scanpy: "scanpy"
+  squidpy: "squidpy"
+
+  # Peak calling / ChIP-seq
+  macs2: "macs2"
+  homer: "homer"
+  meme: "meme"
+  meme-suite: "meme"
+  fimo: "meme"
+
+  # GMAP/GSNAP
+  gmap: "gmap"
+  gsnap: "gmap"
+
+  # Additional Python bio libraries
+  pyfaidx: "pyfaidx"
+  pyvcf: "pyvcf"
+  vcfpy: "vcfpy"
+  bx-python: "bx-python"
+  intervaltree: "intervaltree"
+  pysam: "pysam"
+  bioblend: "bioblend"
+  cgat-core: "cgat-core"
+
+  # ML/AI for bio
+  deeptools: "deeptools"
+  plotly: "plotly"
+
+  # BWA
+  bwa: "bwa"
+  bowtie2: "bowtie2"
+  bowtie: "bowtie"
+  star: "star"
+  tophat2: "tophat2"
+  hisat2: "hisat2"
+
+  # Additional common tools
+  plink: "plink"
+  plink2: "plink2"
+  gatk: "gatk4"
+  gatk4: "gatk4"
+  picard: "picard"
+  multiqc: "multiqc"
+  cutadapt: "cutadapt"
+  fastp: "fastp"
+  jellyfish: "jellyfish"
+  quast: "quast"
+  busco: "busco"
+  checkm: "checkm"
+  checkm2: "checkm2"
+  prokka: "prokka"
+  roary: "roary"
+  breseq: "breseq"
+  snippy: "snippy"
+  sniffles: "sniffles"
+  cuteSV: "cutesv"
+  pbmm2: "pbmm2"
+  ngmlr: "ngmlr"
+  graphmap: "graphmap"
 
 detailed_mappings:
   # Used for map_to_conda_with_details() function
@@ -332,11 +550,125 @@ detailed_mappings:
   pysam:
     conda_name: "pysam"
     version_constraint: ""
+  goatools:
+    conda_name: "goatools"
+    version_constraint: ""
+  distro:
+    conda_name: "distro"
+    version_constraint: ""
+  packaging:
+    conda_name: "packaging"
+    version_constraint: ""
+  xlrd:
+    conda_name: "xlrd"
+    version_constraint: ""
+  ete3:
+    conda_name: "ete3"
+    version_constraint: ""
+  augustus:
+    conda_name: "augustus"
+    version_constraint: ""
+  glimmerhmm:
+    conda_name: "glimmerhmm"
+    version_constraint: ""
+  snap:
+    conda_name: "snap"
+    version_constraint: ""
+  codingquarry:
+    conda_name: "codingquarry"
+    version_constraint: ""
+  evidencemodeler:
+    conda_name: "evidencemodeler"
+    version_constraint: ""
+  pasa:
+    conda_name: "pasa"
+    version_constraint: ""
+  diamond:
+    conda_name: "diamond"
+    version_constraint: ""
+  hmmer:
+    conda_name: "hmmer"
+    version_constraint: ""
+  exonerate:
+    conda_name: "exonerate"
+    version_constraint: ""
+  blat:
+    conda_name: "blat"
+    version_constraint: ""
+  minimap2:
+    conda_name: "minimap2"
+    version_constraint: ""
+  blast:
+    conda_name: "ncbi-blast+"
+    version_constraint: ""
+  ncbi-blast:
+    conda_name: "ncbi-blast+"
+    version_constraint: ""
+  tantan:
+    conda_name: "tantan"
+    version_constraint: ""
+  bedtools:
+    conda_name: "bedtools"
+    version_constraint: ""
   samtools:
     conda_name: "samtools"
     version_constraint: ""
+  bamtools:
+    conda_name: "bamtools"
+    version_constraint: ""
+  trinity:
+    conda_name: "trinity"
+    version_constraint: ""
+  hisat2:
+    conda_name: "hisat2"
+    version_constraint: ""
+  stringtie:
+    conda_name: "stringtie"
+    version_constraint: ""
+  kallisto:
+    conda_name: "kallisto"
+    version_constraint: ""
+  salmon:
+    conda_name: "salmon"
+    version_constraint: ""
+  trimmomatic:
+    conda_name: "trimmomatic"
+    version_constraint: ""
+  fastqc:
+    conda_name: "fastqc"
+    version_constraint: ""
+  mafft:
+    conda_name: "mafft"
+    version_constraint: ""
+  raxml:
+    conda_name: "raxml"
+    version_constraint: ""
+  iqtree:
+    conda_name: "iqtree"
+    version_constraint: ""
+  trimal:
+    conda_name: "trimal"
+    version_constraint: ""
+  proteinortho:
+    conda_name: "proteinortho"
+    version_constraint: ""
+  seqtk:
+    conda_name: "seqtk"
+    version_constraint: ""
+  pigz:
+    conda_name: "pigz"
+    version_constraint: ""
   bcftools:
     conda_name: "bcftools"
+    version_constraint: ""
+  vcftools:
+    conda_name: "vcftools"
+    version_constraint: ""
+  tbl2asn:
+    conda_name: "tbl2asn"
+    version_constraint: ""
+  gmap:
+    conda_name: "gmap"
     version_constraint: ""
   bwa:
     conda_name: "bwa"
@@ -347,56 +679,17 @@ detailed_mappings:
   star:
     conda_name: "star"
     version_constraint: ""
-  hisat2:
-    conda_name: "hisat2"
-    version_constraint: ""
-  bedtools:
-    conda_name: "bedtools"
-    version_constraint: ""
-  vcftools:
-    conda_name: "vcftools"
-    version_constraint: ""
   plink:
     conda_name: "plink"
-    version_constraint: ""
-  gatk:
-    conda_name: "gatk"
     version_constraint: ""
   picard:
     conda_name: "picard"
     version_constraint: ""
-  fastqc:
-    conda_name: "fastqc"
-    version_constraint: ""
   multiqc:
     conda_name: "multiqc"
     version_constraint: ""
-  trimmomatic:
-    conda_name: "trimmomatic"
-    version_constraint: ""
   cutadapt:
     conda_name: "cutadapt"
-    version_constraint: ""
-  seqtk:
-    conda_name: "seqtk"
-    version_constraint: ""
-  blast:
-    conda_name: "blast"
-    version_constraint: ""
-  hmmer:
-    conda_name: "hmmer"
-    version_constraint: ""
-  muscle:
-    conda_name: "muscle"
-    version_constraint: ""
-  mafft:
-    conda_name: "mafft"
-    version_constraint: ""
-  raxml:
-    conda_name: "raxml"
-    version_constraint: ""
-  iqtree:
-    conda_name: "iqtree"
     version_constraint: ""
   snpeff:
     conda_name: "snpeff"
@@ -409,6 +702,147 @@ detailed_mappings:
     version_constraint: ""
   ensembl-vep:
     conda_name: "ensembl-vep"
+    version_constraint: ""
+  trnascan-se:
+    conda_name: "trnascan-se"
+    version_constraint: ""
+  repeatmasker:
+    conda_name: "repeatmasker"
+    version_constraint: ""
+  repeatmodeler:
+    conda_name: "repeatmodeler"
+    version_constraint: ""
+  interproscan:
+    conda_name: "interproscan"
+    version_constraint: ""
+  signalp:
+    conda_name: "signalp"
+    version_constraint: ""
+  signalp6:
+    conda_name: "signalp6"
+    version_constraint: ""
+  emapper:
+    conda_name: "eggnog-mapper"
+    version_constraint: ""
+  eggnog:
+    conda_name: "eggnog-mapper"
+    version_constraint: ""
+  pybedtools:
+    conda_name: "pybedtools"
+    version_constraint: ""
+  gffutils:
+    conda_name: "gffutils"
+    version_constraint: ""
+  pyfaidx:
+    conda_name: "pyfaidx"
+    version_constraint: ""
+  busco:
+    conda_name: "busco"
+    version_constraint: ""
+  prokka:
+    conda_name: "prokka"
+    version_constraint: ""
+  quast:
+    conda_name: "quast"
+    version_constraint: ""
+  kraken2:
+    conda_name: "kraken2"
+    version_constraint: ""
+  macs2:
+    conda_name: "macs2"
+    version_constraint: ""
+  meme:
+    conda_name: "meme"
+    version_constraint: ""
+  meme-suite:
+    conda_name: "meme"
+    version_constraint: ""
+  spades:
+    conda_name: "spades"
+    version_constraint: ""
+  megahit:
+    conda_name: "megahit"
+    version_constraint: ""
+  canu:
+    conda_name: "canu"
+    version_constraint: ""
+  flye:
+    conda_name: "flye"
+    version_constraint: ""
+  racon:
+    conda_name: "racon"
+    version_constraint: ""
+  pilon:
+    conda_name: "pilon"
+    version_constraint: ""
+  freebayes:
+    conda_name: "freebayes"
+    version_constraint: ""
+  gatk:
+    conda_name: "gatk4"
+    version_constraint: ""
+  gatk4:
+    conda_name: "gatk4"
+    version_constraint: ""
+  fastp:
+    conda_name: "fastp"
+    version_constraint: ""
+  jellyfish:
+    conda_name: "jellyfish"
+    version_constraint: ""
+  perl:
+    conda_name: "perl"
+    version_constraint: ""
+  perl-yaml:
+    conda_name: "perl-yaml"
+    version_constraint: ""
+  perl-json:
+    conda_name: "perl-json"
+    version_constraint: ""
+  perl-dbi:
+    conda_name: "perl-dbi"
+    version_constraint: ""
+  perl-dbd-mysql:
+    conda_name: "perl-dbd-mysql"
+    version_constraint: ""
+  perl-file-which:
+    conda_name: "perl-file-which"
+    version_constraint: ""
+  perl-local-lib:
+    conda_name: "perl-local-lib"
+    version_constraint: ""
+  perl-clone:
+    conda_name: "perl-clone"
+    version_constraint: ""
+  perl-hash-merge:
+    conda_name: "perl-hash-merge"
+    version_constraint: ""
+  perl-soap-lite:
+    conda_name: "perl-soap-lite"
+    version_constraint: ""
+  perl-logger-simple:
+    conda_name: "perl-logger-simple"
+    version_constraint: ""
+  perl-scalar-util-numeric:
+    conda_name: "perl-scalar-util-numeric"
+    version_constraint: ""
+  perl-math-utils:
+    conda_name: "perl-math-utils"
+    version_constraint: ""
+  perl-mce:
+    conda_name: "perl-mce"
+    version_constraint: ""
+  perl-text-soundex:
+    conda_name: "perl-text-soundex"
+    version_constraint: ""
+  perl-parallel-forkmanager:
+    conda_name: "perl-parallel-forkmanager"
+    version_constraint: ""
+  perl-db-file:
+    conda_name: "perl-db-file"
+    version_constraint: ""
+  perl-perl4-corelibs:
+    conda_name: "perl-perl4-corelibs"
     version_constraint: ""
   pandas:
     conda_name: "pandas"

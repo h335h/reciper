@@ -285,7 +285,11 @@ def load_command_mappings() -> dict[str, str]:
     Returns:
         Dictionary mapping command names to apt package names
     """
-    # Default mappings for common bioinformatics and system tools
+    # Default mappings for common system tools
+    # NOTE: Bioinformatics tools are NOT included here — they should be
+    # installed via conda/bioconda, not apt. If a bio tool is detected
+    # via subprocess call, it will NOT be added to apt-get since it's
+    # expected to come from conda.
     default_mappings = {
         # System tools
         "ls": "coreutils",
@@ -303,40 +307,7 @@ def load_command_mappings() -> dict[str, str]:
         "scp": "openssh-client",
         "rsync": "rsync",
         "git": "git",
-        
-        # Bioinformatics tools
-        "samtools": "samtools",
-        "bcftools": "bcftools",
-        "bwa": "bwa",
-        "bowtie2": "bowtie2",
-        "star": "star",
-        "hisat2": "hisat2",
-        "bedtools": "bedtools",
-        "vcftools": "vcftools",
-        "plink": "plink",
-        "gatk": "gatk",
-        "picard": "picard",
-        "fastqc": "fastqc",
-        "multiqc": "multiqc",
-        "trimmomatic": "trimmomatic",
-        "cutadapt": "cutadapt",
-        "seqtk": "seqtk",
-        "blastn": "ncbi-blast+",
-        "blastp": "ncbi-blast+",
-        "blastx": "ncbi-blast+",
-        "tblastn": "ncbi-blast+",
-        "tblastx": "ncbi-blast+",
-        "makeblastdb": "ncbi-blast+",
-        "hmmscan": "hmmer",
-        "hmmsearch": "hmmer",
-        "muscle": "muscle",
-        "mafft": "mafft",
-        "raxml": "raxml",
-        "iqtree": "iqtree",
-        "snpEff": "snpeff",
-        "SnpSift": "snpsift",
-        "vep": "ensembl-vep",
-        
+
         # Python/development
         "python": "python3",
         "python3": "python3",
@@ -344,7 +315,7 @@ def load_command_mappings() -> dict[str, str]:
         "conda": "conda",
         "docker": "docker.io",
         "jupyter": "jupyter",
-        
+
         # R/Bioconductor
         "R": "r-base",
         "Rscript": "r-base",
@@ -365,42 +336,93 @@ def load_command_mappings() -> dict[str, str]:
     return default_mappings
 
 
+def _load_conda_package_names() -> set[str]:
+    """Load all known conda package names from the package mappings.
+
+    This is used to filter out commands that should be installed via conda
+    rather than apt.
+    """
+    try:
+        from reciper.mapper import load_mappings
+        primary, detailed = load_mappings()
+        # Collect all non-empty mapping values (conda package names)
+        conda_names = set()
+        for key, val in primary.items():
+            if val:  # non-empty = actual conda package
+                conda_names.add(val.lower())
+        for key, val in detailed.items():
+            if isinstance(val, dict) and val.get('conda_name'):
+                conda_names.add(val['conda_name'].lower())
+        return conda_names
+    except Exception:
+        return set()
+
+
 def map_commands_to_apt_packages(command_calls: list[CommandCall]) -> list[AptPackage]:
     """
     Map detected command calls to apt packages.
-    
+
+    Commands that are known conda/bioconda packages are SKIPPED
+    (they should be installed via conda, not apt).
+
     Args:
         command_calls: List of CommandCall objects
-        
+
     Returns:
-        List of AptPackage objects
+        List of AptPackage objects (only for packages that should go to apt)
+    """
+    apt_pkgs, _ = map_commands_to_apt_and_conda(command_calls)
+    return apt_pkgs
+
+
+def map_commands_to_apt_and_conda(
+    command_calls: list[CommandCall],
+) -> tuple[list[AptPackage], list[str]]:
+    """
+    Map detected command calls to BOTH apt packages AND conda packages.
+
+    Returns a tuple of:
+      - apt_packages: packages that should be installed via apt-get
+      - conda_packages: package names that should be installed via conda
+        (extracted from commands that map to bioconda packages)
     """
     mappings = load_command_mappings()
-    
+    conda_names = _load_conda_package_names()
+
     # Group command calls by command name
     command_groups: dict[str, list[tuple[Path, int]]] = {}
     for call in command_calls:
         if call.command not in command_groups:
             command_groups[call.command] = []
         command_groups[call.command].append((call.file_path, call.line_number))
-    
-    # Create AptPackage objects
+
     apt_packages: list[AptPackage] = []
+    conda_packages: list[str] = []
+
     for command, sources in command_groups.items():
-        # Look up apt package for this command
         package_name = mappings.get(command)
-        
-        # If not found, use the command name as package name (common convention)
+
+        # If not in mappings, check if it's a known conda package
         if not package_name:
+            if command.lower() in conda_names:
+                conda_packages.append(command.lower())
+                continue
             package_name = command
-        
+
+        # If the mapping says "conda:...", extract the conda package name
+        if package_name.startswith("conda:"):
+            conda_pkg = package_name[6:].strip()
+            if conda_pkg and conda_pkg not in conda_packages:
+                conda_packages.append(conda_pkg)
+            continue
+
         apt_packages.append(AptPackage(
             package_name=package_name,
             command=command,
             source_files=sources,
         ))
-    
-    return apt_packages
+
+    return apt_packages, conda_packages
 
 
 def generate_apt_install_commands(apt_packages: list[AptPackage]) -> list[str]:

@@ -195,7 +195,60 @@ def analyze_directory(
         # Step 5: Generate Dockerfile and environment.yml with subprocess command detection
         click.echo(f"\nGenerating files in {output_dir}...")
         click.echo("Scanning for subprocess calls to external tools (samtools, bwa, fastqc, etc.)...")
-        
+
+        # Extract python version constraint and project info from requirements (e.g. from setup.py)
+        python_version_constraint: str | None = None
+        pip_only_packages: list[str] = []
+        project_name: str | None = None
+        project_version: str | None = None
+
+        for req in requirements:
+            if req.name == "python" and req.version_constraint:
+                python_version_constraint = req.version_constraint
+                click.echo(f"Detected Python version constraint: {req.version_constraint}")
+            # Check if package is NOT in conda mappings → mark as pip-only
+            elif req.source and "setup.py" in req.source:
+                from reciper.mapper import map_to_conda
+                test_map = map_to_conda([req.name])
+                if not test_map:
+                    pip_only_packages.append(str(req))
+
+        # Detect project name/version from setup.py for self-install
+        if requirements_file and str(requirements_file).endswith("setup.py"):
+            try:
+                import ast
+                from pathlib import Path as _Path
+                content = _Path(str(requirements_file)).read_text()
+                tree = ast.parse(content)
+                # Collect variable assignments
+                var_values = {}
+                for node in ast.iter_child_nodes(tree):
+                    if isinstance(node, ast.Assign):
+                        for target in node.targets:
+                            if isinstance(target, ast.Name):
+                                var_values[target.id] = node.value
+                # Find setup() call
+                for node in ast.walk(tree):
+                    if isinstance(node, ast.Call):
+                        func = node.func
+                        if isinstance(func, ast.Name) and func.id == "setup":
+                            for kw in node.keywords:
+                                if kw.arg is None:
+                                    continue
+                                val = kw.value
+                                if isinstance(val, ast.Name) and val.id in var_values:
+                                    val = var_values[val.id]
+                                if kw.arg == "name" and isinstance(val, ast.Constant):
+                                    project_name = val.value
+                                elif kw.arg == "version" and isinstance(val, ast.Constant):
+                                    project_version = val.value
+                if project_name:
+                    click.echo(f"Detected project: {project_name} {project_version or '(version unknown)'}")
+                    click.echo(f"Will install {project_name} via pip in Dockerfile")
+            except Exception as e:
+                if verbose:
+                    click.echo(f"Warning: Could not extract project info from setup.py: {e}")
+
         # Pass Python files for command detection
         python_file_paths = [info.path for info in file_infos]
         generate_files(
@@ -204,7 +257,12 @@ def analyze_directory(
             python_files=python_file_paths,
             include_apt_detection=True,
             no_lock=no_lock,
-            conflict_check=conflict_check
+            conflict_check=conflict_check,
+            python_version=python_version_constraint,
+            pip_packages=pip_only_packages if pip_only_packages else None,
+            install_project=bool(project_name),
+            project_name=project_name,
+            project_version=project_version,
         )
 
         # Step 6: Run verification (if not disabled)
