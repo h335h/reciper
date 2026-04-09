@@ -1,3 +1,4 @@
+```gitignore
 # Python
 __pycache__/
 *.py[cod]
@@ -21,33 +22,85 @@ wheels/
 *.egg
 MANIFEST
 
-# Virtual Environment
+# Virtual environments
 venv/
+ENV/
 env/
-.env
-.venv
+.venv/
+.env/
 
-# IDE
+# IDE and editor files
 .vscode/
 .idea/
 *.swp
 *.swo
-
-# OS
+*~
 .DS_Store
 Thumbs.db
 
 # Logs
 *.log
+*.out
 
-# Test outputs
-.pytest_cache/
+# Coverage reports
 .coverage
 htmlcov/
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
 
-# Output files
-# Dockerfile and environment.yml are project files, keep them
-*.dockerfile
-# Exclude generated YAML files but keep project YAML files
-# *.yaml
-# *.yml
+# Environment variables
+.env
+.env.local
+.env.*
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.backup
+
+# Build outputs
+target/
+build/
+dist/
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# MyPy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# PyTest
+.pytest_cache/
+
+# Compressed files
+*.zip
+*.gz
+*.tar
+*.tgz
+*.bz2
+*.xz
+*.7z
+*.rar
+*.zst
+*.lz4
+*.lzh
+*.cab
+*.arj
+*.rpm
+*.deb
+*.Z
+*.lz
+*.lzo
+*.tar.gz
+*.tar.bz2
+*.tar.xz
+*.tar.zst
+```

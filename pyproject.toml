@@ -93,8 +93,10 @@ reciper = "reciper.cli:cli"
 analyze = "reciper.api:analyze"
 analyzer = "reciper.api:Analyzer"
 
-[project.entry-points."pytest11"]
-reciper = "reciper.pytest_plugin"
+# pytest plugin entry point removed - plugin file does not exist
+
+[project.entry-points."pipx.run"]
+reciper = "reciper.cli:main"
 
 [tool.setuptools]
 packages = ["reciper"]
