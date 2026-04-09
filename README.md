@@ -1,6 +1,6 @@
 # Reciper — One-Command Reproducible Environments for Bioinformatics Pipelines
 
-[![CI](https://github.com/githubuser/reciper/actions/workflows/ci.yml/badge.svg)](https://github.com/githubuser/reciper/actions/workflows/ci.yml)
+[![CI](https://github.com/h335h/reciper/actions/workflows/ci.yml/badge.svg)](https://github.com/h335h/reciper/actions/workflows/ci.yml)
 [![PyPI version](https://img.shields.io/pypi/v/reciper.svg)](https://pypi.org/project/reciper/)
 [![Python versions](https://img.shields.io/pypi/pyversions/reciper.svg)](https://pypi.org/project/reciper/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -17,7 +17,7 @@ Reciper — это CLI инструмент, который **автоматич
 2. **Обнаруживает** вызовы внешних утилит (samtools, bwa, fastqc и др.)
 3. **Генерирует** `Dockerfile` и `environment.yml` с правильными зависимостями
 4. **Проверяет** совместимость пакетов и находит конфликты
-5. **Валидирует** окружение через тестовую сборку Docker
+5. **Валидирует** окружение через синтаксическую проверку сгенерированных файлов
 
 **Результат:** Ваш коллега сможет запустить пайплайн с первого раза без ошибок "package not found" и конфликтов версий.
 
@@ -35,7 +35,7 @@ pip install reciper
 pipx install reciper
 
 # Вариант 3: Для разработки
-git clone https://github.com/githubuser/reciper
+git clone https://github.com/h335h/reciper
 cd reciper && pip install -e .
 ```
 
@@ -149,7 +149,7 @@ docker run -it rna-seq-pipeline
 ┌─────────────────────────────────────────────────────────────────┐
 │  6. Валидация                                                   │
 │     ├─ Синтаксическая проверка Dockerfile                       │
-│     ├─ Проверка syntax environment.yml                          │
+│     ├─ Проверка синтаксиса environment.yml                      │
 │     └─ (Опционально) Тестовая сборка Docker                     │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -278,6 +278,8 @@ Success
 
 Reciper можно использовать в своих скриптах:
 
+### Базовый анализ
+
 ```python
 from reciper import analyze
 
@@ -289,8 +291,11 @@ print(f"Сгенерировано файлов: {result.generated_files}")
 # С JSON выводом
 json_result = analyze("./my_pipeline", json_output=True)
 print(json_result)
+```
 
-# Продвинутый анализ с кастомной конфигурацией
+### Продвинутый анализ с кастомной конфигурацией
+
+```python
 from reciper import Analyzer, AnalysisConfig
 
 config = AnalysisConfig(
@@ -308,6 +313,102 @@ print(f"Просканировано файлов: {result.scanned_files}")
 print(f"Conda пакеты: {list(result.conda_packages.keys())}")
 print(f"Apt пакеты: {list(result.apt_packages.keys())}")
 print(f"Конфликты: {result.conflicts}")
+```
+
+### Использование класса Analyzer
+
+```python
+from reciper import Analyzer, AnalysisConfig
+
+# Кастомная конфигурация
+config = AnalysisConfig(
+    output_dir="./output",
+    enable_conflict_check=True,
+    enable_verification=True,
+    parallel_processing=True,
+)
+
+# Создание экземпляра
+analyzer = Analyzer(config)
+
+# Анализ директории
+result = analyzer.analyze("/path/to/project")
+
+# Доступ к результатам
+print(f"Просканировано файлов: {result.scanned_files}")
+print(f"Conda пакеты: {len(result.conda_packages)}")
+print(f"Apt пакеты: {len(result.apt_packages)}")
+
+# Конвертация в dict или JSON
+result_dict = result.to_dict()
+result_json = result.to_json(indent=2)
+```
+
+### Продвинутая конфигурация
+
+```python
+from reciper import AnalysisConfig, analyze_with_custom_config
+
+# Custom configuration for specific use cases
+config = AnalysisConfig(
+    output_dir="./custom_output",
+    generate_dockerfile=True,
+    generate_environment_yml=True,
+    generate_lockfile=False,  # Skip lockfile generation
+    enable_conflict_check=True,
+    enable_verification=False,  # Skip verification
+    parallel_processing=True,
+    max_workers=4,  # Limit parallel workers
+    use_cache=True,  # Enable AST caching
+    json_output=False,
+    verbose=True,
+)
+
+# Analyze with custom config
+result = analyze_with_custom_config("/path/to/project", config)
+```
+
+### Анализ одного файла
+
+```python
+from reciper import analyze_single_file
+
+# Analyze a single Python file
+result = analyze_single_file("script.py")
+print(f"Imports in file: {[imp.module for imp in result.imports]}")
+```
+
+### Интеграция с существующим кодом
+
+```python
+from reciper import Analyzer
+from pathlib import Path
+
+def analyze_project_and_generate_report(project_path: Path) -> dict:
+    """Analyze project and return formatted report."""
+    analyzer = Analyzer()
+    result = analyzer.analyze(project_path)
+
+    # Custom processing
+    report = {
+        "project": str(project_path),
+        "summary": {
+            "files_scanned": result.scanned_files,
+            "python_files": result.python_files_found,
+            "conda_packages": len(result.conda_packages),
+            "apt_packages": len(result.apt_packages),
+            "conflicts_found": len(result.conflicts),
+        },
+        "packages": list(result.conda_packages.keys()),
+        "generated_files": result.generated_files,
+        "verification_passed": result.verification_passed,
+    }
+
+    return report
+
+# Usage
+report = analyze_project_and_generate_report(Path("./my_project"))
+print(report)
 ```
 
 ---
@@ -365,13 +466,21 @@ reciper/
 │   ├── cache.py               # Кэширование AST
 │   ├── command_detector.py    # Детектирование subprocess вызовов
 │   ├── conflict_detector.py   # Детектирование конфликтов
+│   ├── lockfile_generator.py  # Генерация lock-файлов
+│   ├── error_handling.py      # Обработка ошибок
+│   ├── constants.py           # Константы
+│   ├── utils.py               # Утилиты
+│   ├── conda_parser.py        # Парсинг conda окружений
 │   └── data/                  # Данные маппинга
 │       ├── package_mappings.yaml    # Python → conda
 │       ├── command_mappings.yaml    # Команды → apt
 │       └── known_conflicts.yaml     # Известные конфликты
 ├── tests/                     # Тесты
 ├── examples/                  # Примеры проектов
+├── docs/                      # Документация
 ├── pyproject.toml            # Конфигурация проекта
+├── environment.yml           # Conda окружение проекта
+├── requirements.txt          # Python зависимости
 └── README.md                 # Документация
 ```
 
@@ -389,7 +498,7 @@ pip install reciper
 pipx install reciper
 
 # Для разработки
-git clone https://github.com/githubuser/reciper
+git clone https://github.com/h335h/reciper
 cd reciper
 pip install -e ".[dev]"
 ```
@@ -435,7 +544,7 @@ primary_mappings:
   pandas: "pandas"
   biopython: "biopython"
   scikit-learn: "scikit-learn"
-  
+
 standard_library:
   os: ""
   sys: ""
@@ -481,124 +590,9 @@ reciper analyze pipeline.py --output ./docker
 
 ---
 
-## 💻 Программный API
+## 📊 Структура JSON отчета
 
-Reciper предоставляет Python API для интеграции в ваши приложения.
-
-### Базовый анализ
-
-```python
-from reciper import analyze
-
-# Анализ директории
-result = analyze("./my_project")
-print(f"Найдено импортов: {len(result.imports)}")
-print(f"Сгенерированные файлы: {result.generated_files}")
-
-# JSON вывод
-json_result = analyze("./my_project", json_output=True)
-print(json_result)
-```
-
-### Использование класса Analyzer
-
-```python
-from reciper import Analyzer, AnalysisConfig
-
-# Кастомная конфигурация
-config = AnalysisConfig(
-    output_dir="./output",
-    enable_conflict_check=True,
-    enable_verification=True,
-    parallel_processing=True,
-)
-
-# Создание экземпляра
-analyzer = Analyzer(config)
-
-# Анализ директории
-result = analyzer.analyze("/path/to/project")
-
-# Доступ к результатам
-print(f"Просканировано файлов: {result.scanned_files}")
-print(f"Conda пакеты: {len(result.conda_packages)}")
-print(f"Apt пакеты: {len(result.apt_packages)}")
-
-# Конвертация в dict или JSON
-result_dict = result.to_dict()
-result_json = result.to_json(indent=2)
-```
-
-### Продвинутая конфигурация
-
-```python
-from reciper import AnalysisConfig, analyze_with_custom_config
-
-# Custom configuration for specific use cases
-config = AnalysisConfig(
-    output_dir="./custom_output",
-    generate_dockerfile=True,
-    generate_environment_yml=True,
-    generate_lockfile=False,  # Skip lockfile generation
-    enable_conflict_check=True,
-    enable_verification=False,  # Skip verification
-    parallel_processing=True,
-    max_workers=4,  # Limit parallel workers
-    use_cache=True,  # Enable AST caching
-    json_output=False,
-    verbose=True,
-)
-
-# Analyze with custom config
-result = analyze_with_custom_config("/path/to/project", config)
-```
-
-### Single File Analysis
-
-```python
-from reciper import analyze_single_file
-
-# Analyze a single Python file
-result = analyze_single_file("script.py")
-print(f"Imports in file: {[imp.module for imp in result.imports]}")
-```
-
-### Integration with Existing Code
-
-```python
-from reciper import Analyzer
-from pathlib import Path
-
-def analyze_project_and_generate_report(project_path: Path) -> dict:
-    """Analyze project and return formatted report."""
-    analyzer = Analyzer()
-    result = analyzer.analyze(project_path)
-    
-    # Custom processing
-    report = {
-        "project": str(project_path),
-        "summary": {
-            "files_scanned": result.scanned_files,
-            "python_files": result.python_files_found,
-            "conda_packages": len(result.conda_packages),
-            "apt_packages": len(result.apt_packages),
-            "conflicts_found": len(result.conflicts),
-        },
-        "packages": list(result.conda_packages.keys()),
-        "generated_files": result.generated_files,
-        "verification_passed": result.verification_passed,
-    }
-    
-    return report
-
-# Usage
-report = analyze_project_and_generate_report(Path("./my_project"))
-print(report)
-```
-
-## JSON Report Structure
-
-The tool generates comprehensive JSON reports with the following structure:
+Инструмент генерирует подробные JSON отчеты со следующей структурой:
 
 ```json
 {
@@ -653,147 +647,50 @@ The tool generates comprehensive JSON reports with the following structure:
 }
 ```
 
-## Configuration
+---
 
-### Package Mappings
+## 🚀 Как это работает?
 
-The tool uses a YAML configuration file at `reciper/data/package_mappings.yaml` to map Python package names to conda package names. The file includes:
+1. **Сканирование**: Инструмент рекурсивно сканирует целевую директорию на наличие Python файлов
+2. **Парсинг**: Каждый Python файл парсится для извлечения import statements
+3. **Агрегация**: Импорты агрегируются по всем файлам, удаляя дубликаты
+4. **Анализ требований**: Если существует requirements.txt, он парсится и сравнивается с обнаруженными импортами
+5. **Маппинг**: Имена Python пакетов маппятся на имена conda пакетов с использованием базы данных маппингов
+6. **Генерация**: Файлы Dockerfile и environment.yml генерируются с замаппленными пакетами
+7. **Отчетность**: Генерируется подробный JSON отчет (если запрошено)
 
-- **Primary mappings**: Direct Python-to-conda package mappings
-- **Standard library modules**: Python standard library modules that don't require conda packages
-- **Common bioinformatics packages**: Specialized mappings for bioinformatics tools
+---
 
-Example mapping structure:
-```yaml
-primary_mappings:
-  numpy: "numpy"
-  pandas: "pandas"
-  matplotlib: "matplotlib"
-  biopython: "biopython"
-  scikit-learn: "scikit-learn"
-  
-standard_library:
-  os: ""
-  sys: ""
-  json: ""
-  # ... other stdlib modules
-```
+## ⚠️ Ограничения и будущие улучшения
 
-### Customizing Mappings
+### Текущие ограничения
+- Поддерживает только Python импорты (не другие языки)
+- Базовая обработка версионных ограничений
+- Ограничено conda и Docker генерацией окружений
+- Единый файл маппингов (не динамически обновляемый)
 
-You can extend or modify the mappings by editing the YAML file or providing your own mapping file. The tool loads mappings at runtime to support custom package names.
+### Планируемые функции
+- Поддержка дополнительныхых менеджеров пакетов (pip, apt, и др.)
+- Динамическое обновление маппингов из репозиториев conda
+- Поддержка R и других биоинформатических языков
+- Интеграция с CI/CD пайплайнами
+- Веб-интерфейс для визуализации
 
-## Development Setup
+---
 
-### Clone and Install
+## 🤝 Участие в разработке
 
-```bash
-# Clone the repository
-git clone https://github.com/githubuser/reciper
-cd reciper
+Вклад в проект приветствуется! Смотрите раздел установки для разработки выше, чтобы начать.
 
-# Install in development mode with all dependencies
-pip install -e ".[dev]"
-```
+1. Форкните репозиторий
+2. Создайте feature ветку
+3. Внесите изменения
+4. Добавьте тесты для нового функционала
+5. Убедитесь, что все тесты проходят
+6. Отправьте pull request
 
-### Running Tests
+---
 
-```bash
-# Run all tests
-pytest
-
-# Run tests with coverage report
-pytest --cov=reciper
-
-# Run specific test module
-pytest tests/test_features.py
-```
-
-### Code Quality
-
-```bash
-# Run linter
-flake8 reciper/
-
-# Format code with black
-black reciper/
-
-# Type checking with mypy
-mypy reciper/
-```
-
-### Project Structure
-
-```
-reciper/
-├── reciper/                    # Main package
-│   ├── __init__.py            # Package initialization
-│   ├── api.py                 # Public API interface
-│   ├── cli.py                 # Command-line interface
-│   ├── parser.py              # Python import parser
-│   ├── mapper.py              # Package mapping logic
-│   ├── generator.py           # File generation (Dockerfile, environment.yml)
-│   ├── import_aggregator.py   # Import aggregation across files
-│   ├── requirements_parser.py # Requirements.txt parsing
-│   ├── reporter.py            # JSON report generation
-│   ├── scanner.py             # Directory scanning
-│   ├── verifier.py            # Verification logic
-│   ├── cache.py               # AST caching for performance
-│   ├── command_detector.py    # System command detection
-│   ├── conda_parser.py        # Conda environment parsing
-│   ├── conflict_detector.py   # Package conflict detection
-│   ├── error_handling.py      # Error handling utilities
-│   ├── lockfile_generator.py  # Lockfile generation
-│   ├── utils.py               # Shared utilities
-│   └── data/                  # Data files
-│       ├── package_mappings.yaml    # Package mapping configuration
-│       ├── command_mappings.yaml    # Command to apt package mappings
-│       └── known_conflicts.yaml     # Known package conflicts
-├── tests/                     # Test suite
-├── docs/                      # Documentation
-├── examples/                  # Example projects
-├── pyproject.toml            # Project configuration
-├── environment.yml           # Conda environment specification
-├── requirements.txt          # Python dependencies
-└── README.md                 # This file
-```
-
-## How It Works
-
-1. **Scanning**: The tool recursively scans the target directory for Python files
-2. **Parsing**: Each Python file is parsed to extract import statements
-3. **Aggregation**: Imports are aggregated across all files, removing duplicates
-4. **Requirements Analysis**: If a requirements.txt file exists, it's parsed and compared with detected imports
-5. **Mapping**: Python package names are mapped to conda package names using the mapping database
-6. **Generation**: Dockerfile and environment.yml files are generated with the mapped packages
-7. **Reporting**: A detailed JSON report is generated (if requested)
-
-## Limitations and Future Work
-
-### Current Limitations
-- Only supports Python imports (not other languages)
-- Basic version constraint handling
-- Limited to conda and Docker environment generation
-- Single mapping file (not dynamically updated)
-
-### Planned Features
-- Support for additional package managers (pip, apt, etc.)
-- Dynamic mapping updates from conda repositories
-- Support for R and other bioinformatics languages
-- Integration with CI/CD pipelines
-- Web interface for visualization
-
-## Contributing
-
-Contributions are welcome! Please see the development setup section above to get started.
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests for new functionality
-5. Ensure all tests pass
-6. Submit a pull request
-
-## License
+## 📄 Лицензия
 
 MIT
